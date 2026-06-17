@@ -24,12 +24,12 @@ Follow these steps to launch the playground web interface:
      ```bash
      npm start
      ```
-   - You should see a message: *System Prompt Playground listening on http://localhost:3001*.
+   - You should see a message: *System Prompt Playground listening on http://localhost:8282*.
 
 3. **Step 3: Open the Web UI**
    - Open your browser and navigate to:
      ```text
-     http://localhost:3001
+     http://localhost:8282
      ```
 
 ---

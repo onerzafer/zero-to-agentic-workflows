@@ -5,7 +5,7 @@ const os = require('os');
 const https = require('https');
 
 const app = express();
-const PORT = process.env.PORT || 8081;
+const PORT = process.env.PORT || 8282;
 
 const TOKEN_FILE_PATH = path.join(os.homedir(), '.openrouter_token');
 
