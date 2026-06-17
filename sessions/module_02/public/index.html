@@ -819,8 +819,14 @@
 
         // Fetch free models from OpenRouter
         async function fetchModels() {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 3000);
+
             try {
-                const res = await fetch('https://openrouter.ai/api/v1/models');
+                const res = await fetch('https://openrouter.ai/api/v1/models', {
+                    signal: controller.signal
+                });
+                clearTimeout(timeoutId);
                 if (!res.ok) throw new Error('Failed to fetch models');
                 const data = await res.json();
                 
@@ -842,14 +848,16 @@
                 ).join('');
 
             } catch (err) {
-                console.error(err);
+                clearTimeout(timeoutId);
+                console.error('Error loading OpenRouter models:', err);
                 modelSelect.innerHTML = '<option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free (Fallback)</option>';
             }
         }
 
         // Initialize: Load models, then prefill 3 columns A, B, C
-        async function init() {
-            await fetchModels();
+        function init() {
+            // Fetch models in the background (non-blocking) so columns render immediately
+            fetchModels();
             addColumn(presets[1].sys, presets[1].usr, presets[1].title);
             addColumn(presets[2].sys, presets[2].usr, presets[2].title);
             addColumn(presets[3].sys, presets[3].usr, presets[3].title);
