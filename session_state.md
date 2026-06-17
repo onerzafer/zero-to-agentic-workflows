@@ -5,7 +5,7 @@ The agent will automatically manage this file when you run skills like `session-
 
 | Session | Folder | Port | Status |
 | --- | --- | --- | --- |
-| Session 02: System Prompts | `sessions/module_02` | `8282` | `Not Started` |
+| Session 02: System Prompts | `sessions/module_02` | `8282` | `Finished` |
 | Session 03: The "Goldfish" (Persistent Memory) | `sessions/module_03` | `8282` | `Not Started` |
 | Session 04: Giving AI Hands (Tool Calling & SDK Pivot) | `sessions/module_04` | `8282` | `Not Started` |
 | Session 05: Advanced Tools & Structured Outputs | `sessions/module_05` | `8282` | `Not Started` |
