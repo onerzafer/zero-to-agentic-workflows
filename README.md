@@ -36,6 +36,7 @@ Follow these steps exactly:
      * session-finish: Shuts down the active server on port 8282 and marks it Finished.
      * session-repeat: Restarts the current session.
      * session-reset: Resets all sessions back to Not Started.
+     * show-guides: Opens the interactive mind-map infographics and prompt helper page in your default browser.
 
 Once the files are ready and setup.sh is started, print the link to the local onboarding wizard and tell me which session is up next!
 ```

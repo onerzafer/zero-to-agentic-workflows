@@ -30,6 +30,7 @@ This workspace utilizes dedicated agent skills to start, stop, and manage sessio
 * **Finish Session**: Execute the [session-finish](skills/session-finish/SKILL.md) skill to shut down active servers and mark the session completed.
 * **Repeat Session**: Execute the [session-repeat](skills/session-repeat/SKILL.md) skill to restart the current active or a specific session.
 * **Reset All Progress**: Execute the [session-reset](skills/session-reset/SKILL.md) skill to stop all servers and reset all module statuses.
+* **Show Prompts / Guides**: Execute the [show-guides](skills/show-guides/SKILL.md) skill to open the interactive infographics prompt helper in the browser.
 
 The overall progress and completion status is tracked in [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md).
 
