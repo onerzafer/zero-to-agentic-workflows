@@ -111,4 +111,13 @@ app.listen(PORT, () => {
     console.log(`System Prompt Playground listening on http://localhost:${PORT}`);
     console.log(`Make sure your token is configured via ./setup.sh!`);
     console.log(`=============================================\n`);
+
+    // Automatically open the default browser
+    const url = `http://localhost:${PORT}`;
+    const startCmd = process.platform === 'darwin' ? 'open' : process.platform === 'win32' ? 'start ""' : 'xdg-open';
+    require('child_process').exec(`${startCmd} "${url}"`, (err) => {
+        if (err) {
+            console.error(`Failed to automatically open browser: ${err.message}`);
+        }
+    });
 });
