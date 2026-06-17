@@ -429,7 +429,7 @@
                 <div class="timeline-card">
                     <div class="step-number">4</div>
                     <div class="icon-wrapper">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></svg>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"/></svg>
                     </div>
                     <div class="text-content">
                         <h3>Verify Token</h3>
@@ -563,10 +563,10 @@ Currently, the responses from the LLM are rendered as plain pre-formatted text. 
    - If it is JSON, pretty-print it with indentation, and color-code it (e.g., blue/cyan keys, green strings, orange booleans/numbers) so it stands out.
 
 3. HTML Preview:
-   - If the response contains HTML structure (e.g., starts with `<div` or `<html>`), render the HTML output directly so we can see the styled preview.
+   - If the response contains HTML structure (e.g., starts with `&lt;div` or `&lt;html&gt;`), render the HTML output directly so we can see the styled preview.
 
 4. Styling updates:
-   - Add any necessary CSS styling inside the <style> block in index.html to ensure JSON keys/values, bullet points, and headers match the premium dark neon aesthetics of our playground.
+   - Add any necessary CSS styling inside the `&lt;style&gt;` block in index.html to ensure JSON keys/values, bullet points, and headers match the premium dark neon aesthetics of our playground.
 
 Please explore index.html, update the runColumn function, and explain what changes you made so I can test them!</div>
             </div>
@@ -574,6 +574,7 @@ Please explore index.html, update the runColumn function, and explain what chang
     </div>
 
     <script>
+        console.log('Script block registered!');
         // Tab Toggling
         document.querySelectorAll('.tab-btn').forEach(btn => {
             btn.addEventListener('click', () => {
