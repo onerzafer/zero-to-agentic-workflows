@@ -45,7 +45,7 @@ Once the files are ready and setup.sh is started, print the link to the local on
 
 All sessions are loaded in order and served on the shared port **`8282`**:
 
-* **Session 02: System Prompts & Alignment** (`sessions/system_prompt`)
+* **Session 02: System Prompts & Alignment** (`sessions/module_02`)
   * Compare rigid rules vs. behavior guidelines, and output structured JSON data to interface with backend APIs.
 * **Session 03: The "Goldfish" (Persistent Memory)** (Future Module)
   * Simulate engineering memory by managing context window arrays.

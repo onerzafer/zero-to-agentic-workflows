@@ -19,5 +19,5 @@ Whenever the user asks you to start, resume, or open a session, lesson, or cours
    - If the token file is missing, inform the user and execute the `./setup.sh` script (or guide the user to run it) to start the visual onboarding wizard and configure their token.
 
 3. **Navigate to the Active Session**:
-   - Scan the workspace for module folders inside `sessions/` (e.g., `sessions/system_prompt/`, `sessions/module_2/`).
+   - Scan the workspace for module folders inside `sessions/` (e.g., `sessions/module_02/`, `sessions/module_03/`).
    - Navigate to the current active folder and open the local `AGENT.md` file in that folder to read the specific lesson goals, vibe-coding instructions, and comparative exercises.

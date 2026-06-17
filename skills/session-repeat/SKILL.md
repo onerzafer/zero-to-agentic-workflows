@@ -26,7 +26,7 @@ When the user asks to "repeat", "restart", or "start over" a specific session (e
    - Modify the target session's status in [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) to `In Progress` (if it was `Finished` or `Not Started`).
 
 4. **Start the Session Server**:
-   - Go to the session's folder (e.g. `sessions/system_prompt`).
+   - Go to the session's folder (e.g. `sessions/module_02`).
    - Run:
      ```bash
      PORT=8282 npm start

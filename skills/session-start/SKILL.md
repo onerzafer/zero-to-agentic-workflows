@@ -26,7 +26,7 @@ When the user asks to "start", "launch", or "begin" the next session/lesson:
    - Scan the table to find the first session that has status `Not Started`. (If the previous step stopped a session and marked it `Finished`, the next session will be the one directly after it).
 
 3. **Verify Session Directory**:
-   - Resolve the folder path relative to the repository root. For example, for Session 02, it is `sessions/system_prompt`.
+   - Resolve the folder path relative to the repository root. For example, for Session 02, it is `sessions/module_02`.
    - Check if the folder exists in the workspace.
    - If the folder does not exist or is a future placeholder, stop and tell the user: 
      > *"Session X is not yet available or released in the repository workspace. Please wait for the instructor to release it."*
@@ -51,4 +51,4 @@ When the user asks to "start", "launch", or "begin" the next session/lesson:
      `System Prompt Playground listening on http://localhost:8282`
    - Notify the user that the session is now active and provide the clickable URL:
      `http://localhost:8282`
-   - Prompt the user to navigate to the session's local `AGENT.md` (e.g. [sessions/system_prompt/AGENT.md](file:///Users/oner/Projects/zero-to-agentic-workflows/sessions/system_prompt/AGENT.md)) for the lesson guide.
+   - Prompt the user to navigate to the session's local `AGENT.md` (e.g. [sessions/module_02/AGENT.md](file:///Users/oner/Projects/zero-to-agentic-workflows/sessions/module_02/AGENT.md)) for the lesson guide.

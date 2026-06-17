@@ -19,7 +19,7 @@ Follow these steps to launch the playground web interface:
    - This app reads your key automatically from `~/.openrouter_token`.
 
 2. **Step 2: Start the Server**
-   - Navigate to the current directory (`sessions/system_prompt/`) in your terminal.
+   - Navigate to the current directory (`sessions/module_02/`) in your terminal.
    - Run the startup command:
      ```bash
      npm start

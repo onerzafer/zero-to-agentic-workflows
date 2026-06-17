@@ -39,7 +39,7 @@ The overall progress and completion status is tracked in [session_state.md](file
 
 Below is the chronological list of course sessions. The training playground for each module is served on the shared port **`8282`**:
 
-1. **[Session 02: System Prompts & Alignment](sessions/system_prompt/AGENT.md)** (Path: `sessions/system_prompt`)
+1. **[Session 02: System Prompts & Alignment](sessions/module_02/AGENT.md)** (Path: `sessions/module_02`)
    - *Goal*: Compare how system prompts shape LLM outputs. Contrast rigid constraints vs. behavior guidelines, and output structured JSON data.
 2. **Session 03: The "Goldfish" (Persistent Memory)** (Future Module)
    - *Goal*: Manage context window arrays to simulate engineering memory.
