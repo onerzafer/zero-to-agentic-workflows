@@ -1,0 +1,606 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Course Infographics & Prompt Helper</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #060913;
+            --card-bg: rgba(15, 23, 42, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.2);
+            --secondary: #06b6d4;
+            --secondary-glow: rgba(6, 182, 212, 0.2);
+            --purple: #a855f7;
+            --emerald: #10b981;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --font-main: 'Outfit', sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-x: hidden;
+            position: relative;
+            padding: 40px 20px;
+        }
+
+        /* Background glows */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(140px);
+            z-index: 0;
+            opacity: 0.12;
+            pointer-events: none;
+        }
+        .glow-left { width: 500px; height: 500px; background: var(--primary); top: -10%; left: -10%; }
+        .glow-right { width: 500px; height: 500px; background: var(--secondary); bottom: -10%; right: -10%; }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            z-index: 10;
+            max-width: 700px;
+        }
+
+        header h1 {
+            font-size: 2.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 50%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+            margin-bottom: 12px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 1.05rem;
+            line-height: 1.5;
+        }
+
+        /* Navigation Tabs */
+        .tab-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 12px;
+            gap: 6px;
+            margin-bottom: 40px;
+            z-index: 10;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 10px 24px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 14px var(--primary-glow);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Content Sections */
+        .container {
+            width: 100%;
+            max-width: 950px;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .tab-content.active {
+            display: flex;
+            flex-direction: column;
+            gap: 40px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Visual Timeline */
+        .timeline {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 20px;
+            position: relative;
+        }
+
+        /* Connecting line for timeline */
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 45px;
+            left: 50px;
+            right: 50px;
+            height: 2px;
+            background: linear-gradient(90deg, var(--primary), var(--secondary));
+            opacity: 0.2;
+            z-index: 1;
+        }
+
+        .timeline-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 18px;
+            padding: 24px 16px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 16px;
+            position: relative;
+            z-index: 2;
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: transform 0.3s ease, border-color 0.3s ease;
+        }
+
+        .timeline-card:hover {
+            transform: translateY(-5px);
+            border-color: var(--primary);
+        }
+
+        .step-number {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-muted);
+        }
+
+        .timeline-card:hover .step-number {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: #fff;
+            box-shadow: 0 0 10px var(--primary-glow);
+        }
+
+        .icon-wrapper {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            color: var(--primary);
+        }
+
+        .timeline-card:hover .icon-wrapper {
+            color: #fff;
+            background: var(--primary);
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .timeline-card.secondary-hover:hover .step-number {
+            background: var(--secondary);
+            border-color: var(--secondary);
+            color: #fff;
+            box-shadow: 0 0 10px var(--secondary-glow);
+        }
+
+        .timeline-card.secondary-hover:hover .icon-wrapper {
+            color: #fff;
+            background: var(--secondary);
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary-glow);
+        }
+
+        .timeline-card h3 {
+            font-size: 0.95rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .timeline-card p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            line-height: 1.45;
+        }
+
+        /* 4-column timeline for Vibe Coding */
+        .timeline-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+
+        .timeline-4::before {
+            left: 80px;
+            right: 80px;
+            background: linear-gradient(90deg, var(--secondary), var(--purple));
+        }
+
+        .timeline-4 .icon-wrapper {
+            color: var(--secondary);
+        }
+
+        .timeline-4 .timeline-card:hover {
+            border-color: var(--secondary);
+        }
+
+        /* Prompt Copy Box */
+        .prompt-container {
+            background: rgba(10, 15, 30, 0.5);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .prompt-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .prompt-header h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .btn-copy {
+            background: var(--primary);
+            color: #fff;
+            border: none;
+            padding: 8px 18px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.85rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-copy:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px var(--primary-glow);
+        }
+
+        .btn-copy.secondary-btn {
+            background: var(--secondary);
+        }
+
+        .btn-copy.secondary-btn:hover {
+            box-shadow: 0 4px 12px var(--secondary-glow);
+        }
+
+        .prompt-box {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            font-family: monospace;
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: #a5b4fc;
+            max-height: 250px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            border-left: 4px solid var(--primary);
+        }
+
+        .prompt-container.secondary-theme .prompt-box {
+            border-left-color: var(--secondary);
+            color: #99f6e4;
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 850px) {
+            .timeline, .timeline-4 {
+                grid-template-columns: 1fr;
+                gap: 24px;
+            }
+            .timeline::before, .timeline-4::before {
+                display: none;
+            }
+            .timeline-card {
+                flex-direction: row;
+                text-align: left;
+                padding: 20px;
+                gap: 20px;
+            }
+            .timeline-card .step-number {
+                flex-shrink: 0;
+            }
+            .timeline-card .icon-wrapper {
+                flex-shrink: 0;
+            }
+            .timeline-card .text-content {
+                display: flex;
+                flex-direction: column;
+                gap: 4px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="glow-orb glow-left"></div>
+    <div class="glow-orb glow-right"></div>
+
+    <header>
+        <h1>Course Interactive Guides</h1>
+        <p>Simple step-by-step visual roadmaps to help you onboard and complete your training exercises using your AI coding assistant.</p>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <div class="tab-bar">
+        <button class="tab-btn active" data-tab="onboarding">1. Onboarding Guide</button>
+        <button class="tab-btn" data-tab="vibecoding">2. Vibe Coding Exercise</button>
+    </div>
+
+    <div class="container">
+        <!-- TAB 1: Onboarding Visual Guide -->
+        <div class="tab-content active" id="tab-onboarding">
+            <!-- Simple Infographic Timeline -->
+            <div class="timeline">
+                <!-- Step 1 -->
+                <div class="timeline-card">
+                    <div class="step-number">1</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Copy Prompt</h3>
+                        <p>Copy the standard onboarding instructions text below.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-card">
+                    <div class="step-number">2</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Agent Downloads</h3>
+                        <p>Paste to your agent. It clones the repo or downloads the main ZIP archive.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-card">
+                    <div class="step-number">3</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Run Setup</h3>
+                        <p>The agent launches the onboarding server wizard via <code>./setup.sh</code>.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="timeline-card">
+                    <div class="step-number">4</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 2l-2 2m-7.61 7.61a5.5 5.5 0 1 1-7.778 7.778 5.5 5.5 0 0 1 7.777-7.777zm0 0L15.5 7.5m0 0l3 3L22 7l-3-3m-3.5 3.5L19 4"></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Verify Token</h3>
+                        <p>Wizard saves your API key globally in <code>~/.openrouter_token</code>.</p>
+                    </div>
+                </div>
+
+                <!-- Step 5 -->
+                <div class="timeline-card">
+                    <div class="step-number">5</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2a10 10 0 0 1 7.54 16.59l-1.42-1.42A8 8 0 1 0 6.46 7.46l-1.42-1.42A10 10 0 0 1 12 2z"></path><polyline points="12 6 12 12 16 14"></polyline></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Companion Mode</h3>
+                        <p>Agent reads session tracker and acts as your course pilot!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt Box -->
+            <div class="prompt-container">
+                <div class="prompt-header">
+                    <h2>Onboarding Copy-Paste Prompt</h2>
+                    <button class="btn-copy" onclick="copyPrompt('prompt-onboard', this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy Prompt</span>
+                    </button>
+                </div>
+                <div class="prompt-box" id="prompt-onboard">We are starting the "Zero to Agentic Workflows" LLM training program. I need you to act as my pair-programming companion. Please download the playground environment and guide me through the onboarding setup.
+
+Follow these steps exactly:
+
+1. Download the Course Repository:
+   - Check if you have 'git' available. If yes, run:
+     git clone https://github.com/onerzafer/zero-to-agentic-workflows.git
+   - If 'git' is not installed or authenticated, download the repository source code as a ZIP archive directly from:
+     https://github.com/onerzafer/zero-to-agentic-workflows/archive/refs/heads/main.zip
+   - Extract/unzip the contents of the ZIP file into a folder named "zero-to-agentic-workflows" in our current workspace directory.
+
+2. Initialize Onboarding & Token Config:
+   - Navigate into the repository directory.
+   - Run the root-level `./setup.sh` script (or `node scripts/setup-token.js` if executing on Windows) to start the onboarding wizard.
+   - Inform me when the local setup wizard is running, and help me validate and configure my OpenRouter API token.
+
+3. Read Curriculum & Control Skills:
+   - Read the root-level AGENT.md file to familiarize yourself with the curriculum (Sessions 02 to 08).
+   - Read session_state.md to see our current course progress.
+   - Note the custom session control skills available in the 'skills/' folder:
+     * session-start: Starts the next unfinished session on the shared port 8282.
+     * session-finish: Shuts down the active server on port 8282 and marks it Finished.
+     * session-repeat: Restarts the current session.
+     * session-reset: Resets all sessions back to Not Started.
+
+Once the files are ready and setup.sh is started, print the link to the local onboarding wizard and tell me which session is up next!</div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Vibe Coding Visual Guide -->
+        <div class="tab-content" id="tab-vibecoding">
+            <!-- 4-step Timeline -->
+            <div class="timeline timeline-4">
+                <!-- Step 1 -->
+                <div class="timeline-card secondary-hover">
+                    <div class="step-number">1</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Read Response</h3>
+                        <p>Playground client receives raw string answer from the LLM model.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2 -->
+                <div class="timeline-card secondary-hover">
+                    <div class="step-number">2</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Detect Format</h3>
+                        <p>Identify if the response is standard HTML tags, valid JSON, or Markdown text.</p>
+                    </div>
+                </div>
+
+                <!-- Step 3 -->
+                <div class="timeline-card secondary-hover">
+                    <div class="step-number">3</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 18 22 12 16 6"></polyline><polyline points="8 6 2 12 8 18"></polyline></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Format Output</h3>
+                        <p>Beautify JSON objects with color-coding and compile Markdown lists/titles into HTML.</p>
+                    </div>
+                </div>
+
+                <!-- Step 4 -->
+                <div class="timeline-card secondary-hover">
+                    <div class="step-number">4</div>
+                    <div class="icon-wrapper">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>
+                    </div>
+                    <div class="text-content">
+                        <h3>Local Preview</h3>
+                        <p>Open <code>http://localhost:8282</code> to see the styled render results live!</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Prompt Box -->
+            <div class="prompt-container secondary-theme">
+                <div class="prompt-header">
+                    <h2>Vibe Coding Copy-Paste Exercise Prompt</h2>
+                    <button class="btn-copy secondary-btn" onclick="copyPrompt('prompt-vibecode', this)">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                        <span>Copy Prompt</span>
+                    </button>
+                </div>
+                <div class="prompt-box" id="prompt-vibecode">Let's practice vibe coding! I want to improve the response rendering in our System Prompt Playground (under sessions/module_02/public/index.html). 
+
+Currently, the responses from the LLM are rendered as plain pre-formatted text. I want you to update the app to automatically detect the response format and render it beautifully:
+
+1. Markdown Rendering:
+   - If the response contains markdown (like headers, bullet points, or bold text), render it as formatted HTML.
+   - You can inject a lightweight library like 'marked' from a CDN (e.g., https://cdn.jsdelivr.net/npm/marked/marked.min.js) in the index.html head.
+
+2. JSON Syntax Highlighting:
+   - Detect if the response is a valid JSON string (like from Prompt C).
+   - If it is JSON, pretty-print it with indentation, and color-code it (e.g., blue/cyan keys, green strings, orange booleans/numbers) so it stands out.
+
+3. HTML Preview:
+   - If the response contains HTML structure (e.g., starts with `<div` or `<html>`), render the HTML output directly so we can see the styled preview.
+
+4. Styling updates:
+   - Add any necessary CSS styling inside the <style> block in index.html to ensure JSON keys/values, bullet points, and headers match the premium dark neon aesthetics of our playground.
+
+Please explore index.html, update the runColumn function, and explain what changes you made so I can test them!</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab Toggling
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.getAttribute('data-tab')}`).classList.add('active');
+            });
+        });
+
+        // Copy Prompt Helper
+        function copyPrompt(elementId, btn) {
+            const copyText = document.getElementById(elementId).innerText;
+            navigator.clipboard.writeText(copyText).then(() => {
+                const origText = btn.innerHTML;
+                btn.innerHTML = `
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    <span>Copied!</span>
+                `;
+                setTimeout(() => {
+                    btn.innerHTML = origText;
+                }, 2000);
+            }).catch(err => {
+                console.error('Failed to copy: ', err);
+            });
+        }
+    </script>
+</body>
+</html>

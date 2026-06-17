@@ -6,9 +6,10 @@ Welcome! This repository is the training workspace for the **Zero to Agentic Wor
 
 ## 🚀 How to Get Started (For Students)
 
-You do not need Git, GitHub CLI, or a GitHub account configured locally to get started. You will use your AI coding agent (e.g. Gemini, Claude Code, etc.) to setup and run the course materials for you.
+We've created a visual step-by-step companion page to guide you through setting up and running your prompts.
+👉 **[Open the Interactive Onboarding Visual Guide](file:///Users/oner/Projects/zero-to-agentic-workflows/infographics.html)** (Double-click `infographics.html` in your browser) to copy prompts with one click and see the visual timelines.
 
-Copy and paste the prompt below directly into your coding agent's chat window, and let the agent configure your environment:
+Alternatively, you can copy and paste the prompt below directly into your coding agent's chat window to configure your environment:
 
 ```text
 We are starting the "Zero to Agentic Workflows" LLM training program. I need you to act as my pair-programming companion. Please download the playground environment and guide me through the onboarding setup.
