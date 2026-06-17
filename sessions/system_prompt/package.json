@@ -1,0 +1,16 @@
+{
+  "name": "system-prompt-playground",
+  "version": "1.0.0",
+  "description": "System Prompt Playground for LLM Training Program",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "private": true,
+  "devDependencies": {
+    "playwright": "^1.61.0"
+  }
+}

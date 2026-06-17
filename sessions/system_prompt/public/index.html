@@ -1,0 +1,861 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>System Prompt Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #060913;
+            --card-bg: rgba(15, 23, 42, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.3);
+            --secondary: #06b6d4;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --error: #ef4444;
+            --font-main: 'Outfit', sans-serif;
+            
+            /* Color coding themes */
+            --color-purple: #c084fc;
+            --color-purple-glow: rgba(192, 132, 252, 0.15);
+            --color-cyan: #22d3ee;
+            --color-cyan-glow: rgba(34, 211, 238, 0.15);
+            --color-emerald: #34d399;
+            --color-emerald-glow: rgba(52, 211, 153, 0.15);
+            --color-pink: #f43f5e;
+            --color-pink-glow: rgba(244, 63, 94, 0.15);
+            --color-yellow: #eab308;
+            --color-yellow-glow: rgba(234, 179, 8, 0.15);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient Background Glows */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            opacity: 0.1;
+            pointer-events: none;
+        }
+        .glow-left { width: 400px; height: 400px; background: var(--primary); top: 10%; left: -5%; }
+        .glow-right { width: 450px; height: 450px; background: var(--secondary); bottom: 10%; right: -5%; }
+
+        /* Header Styling */
+        header {
+            padding: 16px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 15, 30, 0.6);
+            backdrop-filter: blur(15px);
+            z-index: 10;
+        }
+
+        .header-left {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header-left p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+        }
+
+        /* Tab Controls */
+        .tab-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-right label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+
+        select {
+            padding: 8px 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Main Workspace Content Area */
+        .content-area {
+            flex: 1;
+            position: relative;
+            z-index: 5;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .tab-content {
+            display: none !important;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .tab-content.active {
+            display: flex !important;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* TAB 1: Theory View (How It Works) */
+        .theory-view {
+            padding: 40px;
+            overflow-y: auto;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 32px;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .theory-intro {
+            text-align: center;
+            max-width: 650px;
+        }
+
+        .theory-intro h2 {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .theory-intro p {
+            font-size: 1rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .flow-card-large {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 24px;
+            padding: 40px;
+            width: 100%;
+            max-width: 700px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+        }
+
+        /* Flow diagram inside theory */
+        .flow-diagram {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            width: 100%;
+        }
+
+        .flow-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 24px;
+        }
+
+        .flow-node {
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            flex: 1;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+
+        .node-sys { border-color: var(--color-purple); background: rgba(192, 132, 252, 0.08); color: var(--color-purple); }
+        .node-usr { border-color: var(--color-cyan); background: rgba(34, 211, 238, 0.08); color: var(--color-cyan); }
+        
+        .node-combine {
+            border-color: #a5b4fc;
+            background: rgba(165, 180, 252, 0.08);
+            color: #a5b4fc;
+            font-weight: 600;
+        }
+
+        .node-brain {
+            border-color: var(--primary);
+            background: linear-gradient(135deg, #4f46e5 0%, #6366f1 100%);
+            color: #fff;
+            font-weight: 700;
+            width: 60%;
+            font-size: 0.95rem;
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.4);
+            animation: brain-pulse 2s infinite alternate;
+        }
+
+        .node-resp {
+            border-color: var(--color-emerald);
+            background: rgba(52, 211, 153, 0.08);
+            color: var(--color-emerald);
+            width: 60%;
+        }
+
+        @keyframes brain-pulse {
+            0% { box-shadow: 0 0 5px rgba(99, 102, 241, 0.2); transform: scale(1); }
+            100% { box-shadow: 0 0 25px rgba(99, 102, 241, 0.6); transform: scale(1.02); }
+        }
+
+        .flow-arrow-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            width: 100%;
+            height: 28px;
+        }
+
+        .flow-arrow {
+            display: flex;
+            justify-content: center;
+            height: 100%;
+            position: relative;
+        }
+
+        .flow-line {
+            width: 2px;
+            height: 100%;
+            background: var(--border-color);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .flow-line::after {
+            content: '';
+            position: absolute;
+            top: -24px;
+            left: 0;
+            width: 2px;
+            height: 24px;
+            background: linear-gradient(to bottom, transparent, var(--secondary), transparent);
+            animation: flow-down 1.5s infinite linear;
+        }
+        
+        .flow-line-sys::after { background: linear-gradient(to bottom, transparent, var(--color-purple), transparent); animation-duration: 1.5s; }
+        .flow-line-usr::after { background: linear-gradient(to bottom, transparent, var(--color-cyan), transparent); animation-duration: 1.5s; }
+        .flow-line-combine::after { background: linear-gradient(to bottom, transparent, #a5b4fc, transparent); animation-duration: 1.2s; }
+        .flow-line-out::after { background: linear-gradient(to bottom, transparent, var(--color-emerald), transparent); animation-duration: 1.8s; }
+
+        @keyframes flow-down {
+            0% { top: -24px; }
+            100% { top: 100%; }
+        }
+
+        /* TAB 2: Comparison Board (Playground) */
+        .playground-view {
+            padding: 30px 40px;
+            overflow-x: auto;
+            align-items: stretch;
+            display: flex;
+            gap: 24px;
+            height: 100%;
+        }
+
+        .columns-wrapper {
+            display: flex;
+            gap: 24px;
+            align-items: stretch;
+        }
+
+        /* Column Card Styling */
+        .column-card {
+            width: 400px;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            flex-shrink: 0;
+            backdrop-filter: blur(15px);
+            -webkit-backdrop-filter: blur(15px);
+            transition: all 0.3s ease;
+            position: relative;
+            animation: slideIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateX(30px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .column-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .column-title-text {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-delete {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 0.78rem;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+
+        .btn-delete:hover {
+            color: var(--error);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+
+        textarea {
+            width: 100%;
+            background: rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            color: var(--text-main);
+            font-size: 0.9rem;
+            line-height: 1.45;
+            padding: 12px;
+            outline: none;
+            resize: none;
+            transition: border-color 0.3s ease;
+        }
+
+        textarea:focus {
+            background: rgba(0, 0, 0, 0.4);
+        }
+
+        .prompt-textarea {
+            height: 110px;
+        }
+
+        .query-textarea {
+            height: 90px;
+        }
+
+        .btn-execute {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            padding: 12px;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-execute:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 18px rgba(99, 102, 241, 0.5);
+        }
+
+        .btn-execute:disabled {
+            background: var(--border-color);
+            color: var(--text-muted);
+            box-shadow: none;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Response Box Styling */
+        .response-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            min-height: 160px;
+        }
+
+        .response-box {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 12px 14px;
+            font-size: 0.88rem;
+            line-height: 1.45;
+            flex: 1;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-break: break-word;
+            transition: all 0.3s ease;
+        }
+
+        .column-card.loading .response-box {
+            opacity: 0.5;
+        }
+
+        /* Theme Colorings */
+        .theme-purple { border-top: 4px solid var(--color-purple); }
+        .theme-purple .column-title-text { color: var(--color-purple); }
+        .theme-purple textarea:focus { border-color: var(--color-purple); }
+
+        .theme-cyan { border-top: 4px solid var(--color-cyan); }
+        .theme-cyan .column-title-text { color: var(--color-cyan); }
+        .theme-cyan textarea:focus { border-color: var(--color-cyan); }
+
+        .theme-emerald { border-top: 4px solid var(--color-emerald); }
+        .theme-emerald .column-title-text { color: var(--color-emerald); }
+        .theme-emerald textarea:focus { border-color: var(--color-emerald); }
+
+        .theme-pink { border-top: 4px solid var(--color-pink); }
+        .theme-pink .column-title-text { color: var(--color-pink); }
+        .theme-pink textarea:focus { border-color: var(--color-pink); }
+
+        .theme-yellow { border-top: 4px solid var(--color-yellow); }
+        .theme-yellow .column-title-text { color: var(--color-yellow); }
+        .theme-yellow textarea:focus { border-color: var(--color-yellow); }
+
+        /* Add Column Button Card */
+        .add-column-card {
+            width: 140px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 2px dashed var(--border-color);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-column-card:hover {
+            background: rgba(255, 255, 255, 0.03);
+            border-color: var(--primary);
+        }
+
+        .add-column-card span {
+            font-size: 3rem;
+            color: var(--text-muted);
+            font-weight: 300;
+            transition: color 0.3s ease;
+        }
+
+        .add-column-card:hover span {
+            color: var(--primary);
+        }
+
+        /* Spinners */
+        .spinner {
+            width: 14px;
+            height: 14px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        .card-spinner {
+            width: 12px;
+            height: 12px;
+            border: 2px solid rgba(255, 255, 255, 0.15);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+        .theme-purple .card-spinner { border-top-color: var(--color-purple); }
+        .theme-cyan .card-spinner { border-top-color: var(--color-cyan); }
+        .theme-emerald .card-spinner { border-top-color: var(--color-emerald); }
+        .theme-pink .card-spinner { border-top-color: var(--color-pink); }
+        .theme-yellow .card-spinner { border-top-color: var(--color-yellow); }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
+    </style>
+</head>
+<body>
+    <div class="glow-orb glow-left"></div>
+    <div class="glow-orb glow-right"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <h1>System Prompt Playground</h1>
+            <p>Onboarding lesson sandbox: compare and explore LLM system instructions</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="theory">How it Works</button>
+            <button class="tab-btn" data-tab="playground">Playground</button>
+        </div>
+
+        <div class="header-right">
+            <label for="model-select">Active Model</label>
+            <select id="model-select">
+                <option value="">Loading free models...</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Content Area -->
+    <div class="content-area">
+        
+        <!-- TAB 1: Theory View -->
+        <div class="tab-content active theory-view" id="tab-theory">
+            <div class="theory-intro">
+                <h2>How System Prompts Work</h2>
+                <p>An LLM processes your query inside a combined context window. Before your text is sent, the system instructions are appended to guide how the neural network aligns, formats, and shapes its reasoning.</p>
+            </div>
+
+            <!-- Conceptual Flow Diagram -->
+            <div class="flow-card-large">
+                <div class="flow-diagram">
+                    <!-- Input Layer -->
+                    <div class="flow-row">
+                        <div class="flow-node node-sys">
+                            System Prompt
+                            <div style="font-size:0.75rem; opacity:0.8; font-weight:400; margin-top:4px;">(Instructions / Rules / Persona)</div>
+                        </div>
+                        <div class="flow-node node-usr">
+                            User Prompt
+                            <div style="font-size:0.75rem; opacity:0.8; font-weight:400; margin-top:4px;">(User's Query / Question)</div>
+                        </div>
+                    </div>
+                    
+                    <!-- Merge Layer -->
+                    <div class="flow-arrow-row">
+                        <div class="flow-arrow"><div class="flow-line flow-line-sys"></div></div>
+                        <div class="flow-arrow"><div class="flow-line flow-line-usr"></div></div>
+                    </div>
+                    
+                    <div class="flow-node node-combine" style="width: 80%;">
+                        Combined Prompt Context
+                        <div style="font-size:0.75rem; opacity:0.8; font-weight:400; margin-top:4px;">[ System Prompt + User Prompt ]</div>
+                    </div>
+                    
+                    <!-- Processing Layer -->
+                    <div class="flow-arrow" style="height: 28px;">
+                        <div class="flow-line flow-line-combine"></div>
+                    </div>
+                    
+                    <div class="flow-node node-brain">LLM Brain / Neural Net</div>
+                    
+                    <!-- Output Layer -->
+                    <div class="flow-arrow" style="height: 28px;">
+                        <div class="flow-line flow-line-out"></div>
+                    </div>
+                    
+                    <div class="flow-node node-resp">Final AI Response</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB 2: Playground View -->
+        <div class="tab-content playground-view" id="tab-playground">
+            <div class="columns-wrapper" id="columns-wrapper">
+                <!-- Columns dynamically added here -->
+            </div>
+            
+            <!-- Add Column Button Card -->
+            <div class="add-column-card" id="add-column-card">
+                <span>+</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const modelSelect = document.getElementById('model-select');
+        const columnsWrapper = document.getElementById('columns-wrapper');
+        const addColumnCard = document.getElementById('add-column-card');
+
+        // Navigation tab toggles
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.getAttribute('data-tab')}`).classList.add('active');
+            });
+        });
+
+        // Theme Names & Accents Cycling
+        const themes = ['purple', 'cyan', 'emerald', 'pink', 'yellow'];
+        let columnCounter = 0;
+
+        // Default Presets for Columns A, B, C
+        const presets = {
+            1: {
+                title: "Prompt A: Rigid Rules",
+                sys: "You are a customer support assistant. You must strictly follow these rules:\n- If the user says 'refund', respond exactly with: 'Refund requests must be emailed to refunds@example.com.'\n- If you see the words 'charge error' or 'billed twice', reply with: 'Double charges are automatically reversed in 3-5 days.'\n- If the user mentions 'cancel', respond exactly with: 'To cancel your account, go to account settings.'\nDo not include any greetings, explanations, or other text. You must output only the exact matching phrase.",
+                usr: "Hi, I saw a charge error on my bank statement and got billed twice. I don't want to cancel my account, but I definitely need a refund for this duplicate charge. Can you help me?"
+            },
+            2: {
+                title: "Prompt B: Flexible Rules",
+                sys: "You are a helpful and empathetic customer support assistant. Observe these flexible guidelines:\n- Be concise.\n- Be polar: take a clear, firm stance on what we can or cannot do to help the user, and contrast options sharply.\n- Use bullet points to simplify information.",
+                usr: "Hi, I saw a charge error on my bank statement and got billed twice. I don't want to cancel my account, but I definitely need a refund for this duplicate charge. Can you help me?"
+            },
+            3: {
+                title: "Prompt C: Structured Output",
+                sys: "You are a support ticket classifier. Analyze the user's input and extract key details.\nYou must output a valid JSON object matching the following structure. Do not output any other text, explanations, or markdown wrapper:\n{\n  \"billing_issue_detected\": true,\n  \"refund_requested\": true,\n  \"account_cancellation_intent\": false,\n  \"urgency_level\": \"high\" | \"medium\" | \"low\",\n  \"summary_sentence\": \"string\"\n}",
+                usr: "Hi, I saw a charge error on my bank statement and got billed twice. I don't want to cancel my account, but I definitely need a refund for this duplicate charge. Can you help me?"
+            }
+        };
+
+        // Create a new column
+        function addColumn(sysVal = "", usrVal = "", customTitle = null) {
+            columnCounter++;
+            const id = columnCounter;
+            const theme = themes[(columnCounter - 1) % themes.length];
+            const title = customTitle || `Prompt ${String.fromCharCode(64 + id)}`;
+
+            // Create column element
+            const col = document.createElement('div');
+            col.className = `column-card theme-${theme}`;
+            col.id = `col-${id}`;
+            col.innerHTML = `
+                <div class="column-header">
+                    <span class="column-title-text">${title}</span>
+                    ${id > 3 ? `<button class="btn-delete" onclick="deleteColumn(${id})">Delete</button>` : ''}
+                </div>
+                
+                <div class="form-group">
+                    <label for="sys-${id}">System Prompt</label>
+                    <textarea id="sys-${id}" class="prompt-textarea" placeholder="Enter instructions here...">${sysVal}</textarea>
+                </div>
+                
+                <div class="form-group">
+                    <label for="usr-${id}">User Prompt</label>
+                    <textarea id="usr-${id}" class="query-textarea" placeholder="Enter query here...">${usrVal}</textarea>
+                </div>
+                
+                <button class="btn-execute" id="btn-${id}" onclick="runColumn(${id})">
+                    <span class="spinner" id="spinner-${id}"></span>
+                    <span>Send</span>
+                </button>
+                
+                <div class="response-container">
+                    <label>Response</label>
+                    <div class="response-box" id="resp-${id}"><em>Click Send to fetch response...</em></div>
+                </div>
+            `;
+
+            // Insert before the Add Column button card
+            columnsWrapper.appendChild(col);
+        }
+
+        // Delete custom column
+        function deleteColumn(id) {
+            const col = document.getElementById(`col-${id}`);
+            if (col) col.remove();
+        }
+
+        // Run API request for a specific column
+        async function runColumn(id) {
+            const model = modelSelect.value;
+            const systemPrompt = document.getElementById(`sys-${id}`).value;
+            const userPrompt = document.getElementById(`usr-${id}`).value.trim();
+            const btn = document.getElementById(`btn-${id}`);
+            const spinner = document.getElementById(`spinner-${id}`);
+            const respBox = document.getElementById(`resp-${id}`);
+            const card = document.getElementById(`col-${id}`);
+
+            if (!userPrompt) {
+                respBox.innerHTML = '<span style="color: var(--error)">Error: User query is required.</span>';
+                return;
+            }
+
+            // UI loading state
+            btn.disabled = true;
+            spinner.style.display = 'block';
+            respBox.textContent = 'Processing request...';
+            card.classList.add('loading');
+
+            try {
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ model, systemPrompt, userPrompt })
+                });
+
+                const data = await res.json();
+
+                if (!res.ok) {
+                    throw new Error(data.error || 'API call failed');
+                }
+
+                respBox.textContent = data.response;
+            } catch (err) {
+                respBox.innerHTML = `<span style="color: var(--error)">Error: ${err.message}</span>`;
+            } finally {
+                btn.disabled = false;
+                spinner.style.display = 'none';
+                card.classList.remove('loading');
+            }
+        }
+
+        // Add Column Click Handler
+        addColumnCard.addEventListener('click', () => {
+            // Default user query for new columns
+            const defaultUserQuery = document.getElementById('usr-1')?.value || "Hi, I saw a charge error on my bank statement and got billed twice. I don't want to cancel my account, but I definitely need a refund for this duplicate charge. Can you help me?";
+            addColumn("", defaultUserQuery);
+            
+            // Scroll to the end of view
+            setTimeout(() => {
+                document.getElementById('tab-playground').scrollLeft = document.getElementById('tab-playground').scrollWidth;
+            }, 100);
+        });
+
+        // Fetch free models from OpenRouter
+        async function fetchModels() {
+            try {
+                const res = await fetch('https://openrouter.ai/api/v1/models');
+                if (!res.ok) throw new Error('Failed to fetch models');
+                const data = await res.json();
+                
+                // Filter for free models
+                const freeModels = data.data.filter(model => {
+                    const pricePrompt = parseFloat(model.pricing?.prompt || 0);
+                    const priceCompletion = parseFloat(model.pricing?.completion || 0);
+                    return pricePrompt === 0 && priceCompletion === 0;
+                });
+
+                if (freeModels.length === 0) {
+                    modelSelect.innerHTML = '<option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free (Fallback)</option>';
+                    return;
+                }
+
+                // Populate selector
+                modelSelect.innerHTML = freeModels.map(model => 
+                    `<option value="${model.id}">${model.name || model.id}</option>`
+                ).join('');
+
+            } catch (err) {
+                console.error(err);
+                modelSelect.innerHTML = '<option value="google/gemma-2-9b-it:free">google/gemma-2-9b-it:free (Fallback)</option>';
+            }
+        }
+
+        // Initialize: Load models, then prefill 3 columns A, B, C
+        async function init() {
+            await fetchModels();
+            addColumn(presets[1].sys, presets[1].usr, presets[1].title);
+            addColumn(presets[2].sys, presets[2].usr, presets[2].title);
+            addColumn(presets[3].sys, presets[3].usr, presets[3].title);
+        }
+
+        init();
+    </script>
+</body>
+</html>
