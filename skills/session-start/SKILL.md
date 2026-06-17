@@ -11,21 +11,31 @@ This skill guides the agent to automatically find, status-update, and start the 
 
 When the user asks to "start", "launch", or "begin" the next session/lesson:
 
-1. **Find the Next Session**:
+1. **Stop Previous Session (If Running)**:
    - Read the [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) file.
-   - Scan the table to find the first session that has status `Not Started` or `In Progress`.
+   - Check if any session is currently marked as `In Progress`.
+   - If a session is active:
+     - Terminate the server process listening on the shared port `8282`:
+       ```bash
+       PID=$(lsof -t -i:8282); if [ -n "$PID" ]; then kill -9 $PID; fi
+       ```
+     - Update its status to `Finished` in [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md).
 
-2. **Verify Session Directory**:
+2. **Find the Next Session**:
+   - Re-read/parse the updated [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) file.
+   - Scan the table to find the first session that has status `Not Started`. (If the previous step stopped a session and marked it `Finished`, the next session will be the one directly after it).
+
+3. **Verify Session Directory**:
    - Resolve the folder path relative to the repository root. For example, for Session 02, it is `sessions/system_prompt`.
    - Check if the folder exists in the workspace.
    - If the folder does not exist or is a future placeholder, stop and tell the user: 
      > *"Session X is not yet available or released in the repository workspace. Please wait for the instructor to release it."*
 
-3. **Update State to In Progress**:
-   - Modify [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) to update the session's status to `In Progress`.
+4. **Update State to In Progress**:
+   - Modify [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) to update the new session's status to `In Progress`.
    - Ensure the markdown table line is updated correctly.
 
-4. **Start the Session Server**:
+5. **Start the Session Server**:
    - If `node_modules` does not exist in the session folder, run:
      ```bash
      npm install
@@ -36,7 +46,7 @@ When the user asks to "start", "launch", or "begin" the next session/lesson:
      ```
      *(Set `WaitMsBeforeAsync` to `2000` to let it start up before the command moves to the background).*
 
-5. **Confirm and Notify**:
+6. **Confirm and Notify**:
    - Verify from the command's console output that the server successfully printed:
      `System Prompt Playground listening on http://localhost:8282`
    - Notify the user that the session is now active and provide the clickable URL:
