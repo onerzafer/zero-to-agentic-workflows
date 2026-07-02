@@ -35,20 +35,31 @@ When the user asks to "start", "launch", or "begin" the next session/lesson:
    - Modify [session_state.md](file:///Users/oner/Projects/zero-to-agentic-workflows/session_state.md) to update the new session's status to `In Progress`.
    - Ensure the markdown table line is updated correctly.
 
-5. **Start the Session Server**:
+5. **Prompt for Track Selection**:
+   - Ask the user if they want to run the **Non-Techie Track (Web UI)** or the **Techie Track (CLI Coding Challenge)**.
+
+6. **Start the Session Server / Environment**:
    - If `node_modules` does not exist in the session folder, run:
      ```bash
      npm install
      ```
-   - Start the server using `run_command` in the session's folder. Run it on port `8282` as a background task.
-     ```bash
-     PORT=8282 npm start
-     ```
-     *(Set `WaitMsBeforeAsync` to `2000` to let it start up before the command moves to the background).*
+   - **If the user chooses the Non-Techie Track (Web UI)**:
+     - Start the Express server using `run_command` in the session's folder on port `8282` as a background task.
+       ```bash
+       PORT=8282 npm start
+       ```
+       *(Set `WaitMsBeforeAsync` to `2000` to let it start up before the command moves to the background).*
+     - Confirm from the command's console output that the server successfully printed:
+       `System Prompt Playground listening on http://localhost:8282` (or similar start notification).
+     - Notify the user that the session is active and provide the clickable URL:
+       `http://localhost:8282`
+   - **If the user chooses the Techie Track (CLI Coding Challenge)**:
+     - Inform the user that the environment is ready.
+     - Guide them to open [cli-chat.js](file:///sessions/module_03/cli-chat.js) (adjust path to absolute workspace path) to see the code challenges, and tell them to run it in their terminal:
+       ```bash
+       node cli-chat.js
+       ```
 
-6. **Confirm and Notify**:
-   - Verify from the command's console output that the server successfully printed:
-     `System Prompt Playground listening on http://localhost:8282`
-   - Notify the user that the session is now active and provide the clickable URL:
-     `http://localhost:8282`
-   - Prompt the user to navigate to the session's local `AGENT.md` (e.g. [sessions/module_02/AGENT.md](file:///Users/oner/Projects/zero-to-agentic-workflows/sessions/module_02/AGENT.md)) for the lesson guide.
+7. **Confirm and Notify**:
+   - Prompt the user to navigate to the session's local `AGENT.md` (e.g. [sessions/module_03/AGENT.md](file:///Users/oner/Projects/zero-to-agentic-workflows/sessions/module_03/AGENT.md)) for the lesson guide.
+

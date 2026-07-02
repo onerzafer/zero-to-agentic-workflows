@@ -1,0 +1,13 @@
+{
+  "name": "persistent-memory-playground",
+  "version": "1.0.0",
+  "description": "Persistent Memory Playground for LLM Training Program",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
+  },
+  "private": true
+}

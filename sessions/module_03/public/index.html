@@ -1,0 +1,1588 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Session 03: Persistent Memory Playground</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #060913;
+            --card-bg: rgba(15, 23, 42, 0.45);
+            --border-color: rgba(255, 255, 255, 0.08);
+            --primary: #6366f1;
+            --primary-glow: rgba(99, 102, 241, 0.3);
+            --secondary: #06b6d4;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --success: #10b981;
+            --error: #ef4444;
+            --font-main: 'Outfit', sans-serif;
+            
+            /* Theme colors */
+            --color-purple: #c084fc;
+            --color-cyan: #22d3ee;
+            --color-emerald: #34d399;
+            --color-pink: #f43f5e;
+            --color-yellow: #eab308;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font-main);
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Ambient background glows */
+        .glow-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(120px);
+            z-index: 0;
+            opacity: 0.08;
+            pointer-events: none;
+        }
+        .glow-left { width: 500px; height: 500px; background: var(--primary); top: -10%; left: -5%; }
+        .glow-right { width: 500px; height: 500px; background: var(--secondary); bottom: -10%; right: -5%; }
+
+        /* Header styling */
+        header {
+            padding: 16px 40px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(10, 15, 30, 0.6);
+            backdrop-filter: blur(15px);
+            z-index: 10;
+        }
+
+        .header-left h1 {
+            font-size: 1.4rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 40%, var(--text-muted) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -0.5px;
+        }
+
+        .header-left p {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 2px;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .header-right label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+        }
+
+        select {
+            padding: 8px 14px;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            font-size: 0.85rem;
+            outline: none;
+            cursor: pointer;
+            transition: border-color 0.3s ease;
+        }
+
+        select:focus {
+            border-color: var(--primary);
+        }
+
+        /* Main Navigation Tabs */
+        .maintab-content {
+            display: none !important;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .maintab-content.active {
+            display: flex !important;
+        }
+
+        .tab-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+            margin-right: 16px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 6px 14px;
+            font-size: 0.82rem;
+            font-weight: 600;
+            border-radius: 7px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: #fff;
+            box-shadow: 0 4px 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .tab-btn:hover:not(.active) {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        /* Theory & Architecture View Styling */
+        .theory-view-container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100%;
+            padding: 24px 40px;
+            gap: 20px;
+            overflow: hidden;
+        }
+
+        .theory-selector-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
+            padding: 6px;
+            border-radius: 12px;
+            gap: 8px;
+            width: fit-content;
+            z-index: 10;
+        }
+
+        .theory-mode-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: 1px solid transparent;
+        }
+
+        .theory-mode-btn.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .theory-split {
+            display: flex;
+            gap: 28px;
+            flex: 1;
+            overflow: hidden;
+            align-items: stretch;
+        }
+
+        .diagram-panel {
+            flex: 1.5;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            padding: 24px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+        }
+
+        .diagram-canvas {
+            position: relative;
+            width: 100%;
+            height: 480px;
+        }
+
+        /* Node Styling */
+        .diag-node {
+            position: absolute;
+            width: 140px;
+            padding: 12px 8px;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            background: rgba(10, 15, 30, 0.85);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            text-align: center;
+            z-index: 5;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+        }
+
+        .diag-node.disabled {
+            opacity: 0.25;
+            filter: grayscale(1);
+            box-shadow: none;
+            border-color: rgba(255,255,255,0.03);
+        }
+
+        .node-icon { font-size: 1.5rem; }
+        .node-label { font-size: 0.78rem; font-weight: 600; line-height: 1.3; }
+
+        .node-user { border-color: var(--color-cyan); color: var(--color-cyan); }
+        .node-assembler { border-color: var(--color-purple); color: var(--color-purple); }
+        .node-brain-diag { 
+            border-color: var(--primary); 
+            color: #fff;
+            background: linear-gradient(135deg, #1e1b4b 0%, #312e81 100%);
+            box-shadow: 0 0 20px rgba(99, 102, 241, 0.2);
+            width: 150px;
+        }
+        .node-brain-diag.pulse {
+            animation: brain-pulse 2s infinite alternate;
+        }
+        .node-response { border-color: var(--color-emerald); color: var(--color-emerald); }
+        .node-short-mem { border-color: var(--color-purple); color: var(--color-purple); font-size: 0.72rem; }
+        .node-long-mem { border-color: var(--color-emerald); color: var(--color-emerald); font-size: 0.72rem; }
+
+        /* SVG Flow Lines */
+        .diagram-svg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .flow-path {
+            stroke: rgba(255, 255, 255, 0.05);
+            stroke-width: 2;
+            fill: none;
+            transition: stroke 0.3s ease, stroke-width 0.3s ease;
+        }
+
+        .flow-path.active {
+            stroke-width: 3;
+            stroke-dasharray: 6, 6;
+            animation: dash 30s linear infinite;
+        }
+
+        .flow-path.active.path-sys { stroke: var(--color-purple); }
+        .flow-path.active.path-usr { stroke: var(--color-cyan); }
+        .flow-path.active.path-brain { stroke: var(--primary); }
+        .flow-path.active.path-out { stroke: var(--color-emerald); }
+
+        @keyframes dash {
+            to {
+                stroke-dashoffset: -1000;
+            }
+        }
+
+        /* Explanation Panel */
+        .explanation-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            overflow-y: auto;
+        }
+
+        .expl-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            padding: 24px;
+            backdrop-filter: blur(15px);
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            height: 100%;
+            justify-content: flex-start;
+        }
+
+        .expl-card h3 {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: #fff;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .expl-card h3 span {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            background: rgba(255,255,255,0.05);
+            color: var(--text-muted);
+        }
+
+        .expl-card p {
+            font-size: 0.88rem;
+            line-height: 1.5;
+            color: var(--text-muted);
+        }
+
+        .expl-card ul {
+            padding-left: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: var(--text-main);
+        }
+
+        .pros-cons-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-top: 8px;
+        }
+
+        .pros-box, .cons-box {
+            padding: 12px;
+            border-radius: 8px;
+            background: rgba(0,0,0,0.2);
+            border: 1px solid var(--border-color);
+        }
+
+        .pros-box h5 { color: var(--success); font-size: 0.8rem; margin-bottom: 6px; text-transform: uppercase; }
+        .cons-box h5 { color: var(--error); font-size: 0.8rem; margin-bottom: 6px; text-transform: uppercase; }
+
+        .pros-box ul, .cons-box ul {
+            list-style-type: none;
+            padding-left: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+        }
+
+        /* Split Screen Container */
+        .workspace {
+            flex: 1;
+            display: flex;
+            padding: 24px 40px;
+            gap: 28px;
+            z-index: 5;
+            height: calc(100vh - 80px);
+            overflow: hidden;
+        }
+
+        /* Left Half: Chatbot */
+        .chat-section {
+            flex: 1.2;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(15px);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .chat-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .chat-title-group {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .chat-title {
+            font-size: 0.95rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-cyan);
+        }
+
+        .mode-badge {
+            font-size: 0.75rem;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-weight: 600;
+            background: rgba(34, 211, 238, 0.1);
+            color: var(--color-cyan);
+            border: 1px solid rgba(34, 211, 238, 0.2);
+            width: fit-content;
+        }
+
+        .chat-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .btn-new-session {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-new-session:hover {
+            background: rgba(239, 68, 68, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-reset-disk {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            border: 1px solid var(--border-color);
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-reset-disk:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #fff;
+        }
+
+        /* Mode Selector Block */
+        .mode-selection-bar {
+            padding: 12px 20px;
+            background: rgba(0, 0, 0, 0.1);
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            overflow-x: auto;
+        }
+
+        .mode-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            flex: 1;
+            min-width: 120px;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .mode-card.active {
+            background: rgba(99, 102, 241, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 10px rgba(99, 102, 241, 0.2);
+        }
+
+        .mode-card h4 {
+            font-size: 0.8rem;
+            font-weight: 700;
+            margin-bottom: 2px;
+            color: var(--text-main);
+        }
+
+        .mode-card.active h4 {
+            color: var(--primary);
+        }
+
+        .mode-card p {
+            font-size: 0.65rem;
+            color: var(--text-muted);
+        }
+
+        /* Message Log Area */
+        .messages-container {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .msg-bubble {
+            max-width: 75%;
+            padding: 12px 16px;
+            border-radius: 14px;
+            line-height: 1.45;
+            font-size: 0.9rem;
+            word-wrap: break-word;
+            animation: bubbleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+        }
+
+        @keyframes bubbleIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .msg-user {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            color: #fff;
+            align-self: flex-end;
+            border-bottom-right-radius: 2px;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.25);
+        }
+
+        .msg-bot {
+            background: rgba(255, 255, 255, 0.05);
+            color: var(--text-main);
+            align-self: flex-start;
+            border-bottom-left-radius: 2px;
+            border: 1px solid var(--border-color);
+        }
+
+        .msg-system {
+            align-self: center;
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid rgba(239, 68, 68, 0.15);
+            font-size: 0.78rem;
+            font-weight: 500;
+            padding: 6px 12px;
+            border-radius: 8px;
+            max-width: 90%;
+            text-align: center;
+        }
+
+        /* Message input area */
+        .input-bar {
+            padding: 16px 20px;
+            border-top: 1px solid var(--border-color);
+            display: flex;
+            gap: 12px;
+            background: rgba(0, 0, 0, 0.15);
+        }
+
+        .input-bar textarea {
+            flex: 1;
+            height: 48px;
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            color: var(--text-main);
+            padding: 12px;
+            outline: none;
+            resize: none;
+            font-size: 0.9rem;
+            line-height: 1.4;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-bar textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .btn-send {
+            background: linear-gradient(135deg, var(--primary) 0%, #4f46e5 100%);
+            color: white;
+            border: none;
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            transition: all 0.2s ease;
+        }
+
+        .btn-send:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4);
+        }
+
+        .btn-send:disabled {
+            background: var(--border-color);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        /* Right Half: Techie Inspector */
+        .inspector-section {
+            flex: 1;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(15px);
+            overflow: hidden;
+        }
+
+        .inspector-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border-color);
+            background: rgba(0, 0, 0, 0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .inspector-header h2 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--color-purple);
+        }
+
+        /* Inspector Tabs */
+        .inspector-tab-bar {
+            display: flex;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 4px;
+            gap: 4px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .ins-tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            font-weight: 600;
+            border-radius: 6px;
+            cursor: pointer;
+            flex: 1;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+
+        .ins-tab-btn.active {
+            background: rgba(192, 132, 252, 0.12);
+            color: var(--color-purple);
+            border: 1px solid rgba(192, 132, 252, 0.2);
+        }
+
+        .ins-tab-content {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: none;
+            background: rgba(0, 0, 0, 0.05);
+        }
+
+        .ins-tab-content.active {
+            display: block;
+        }
+
+        /* Preformatted boxes for logs */
+        pre {
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            font-family: monospace;
+            font-size: 0.8rem;
+            line-height: 1.4;
+            color: #d1d5db;
+            white-space: pre-wrap;
+            word-break: break-all;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        .memories-md-view {
+            font-size: 0.85rem;
+            line-height: 1.5;
+            color: #d1d5db;
+            white-space: pre-wrap;
+            font-family: monospace;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 14px;
+            height: 100%;
+            overflow-y: auto;
+        }
+
+        /* Tool Call Cards */
+        .tool-log-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .tool-card {
+            border: 1px solid rgba(52, 211, 153, 0.2);
+            background: rgba(52, 211, 153, 0.04);
+            border-radius: 8px;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .tool-card h5 {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--color-emerald);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        .tool-card h5 span {
+            font-size: 0.7rem;
+            background: rgba(52, 211, 153, 0.1);
+            padding: 1px 6px;
+            border-radius: 4px;
+        }
+
+        .tool-card-body {
+            font-family: monospace;
+            font-size: 0.75rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 8px;
+            border-radius: 4px;
+            color: #e5e7eb;
+        }
+
+        /* Discussion Cards */
+        .discussion-container {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .discussion-card {
+            background: rgba(234, 179, 8, 0.04);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            border-radius: 10px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .discussion-card h4 {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--color-yellow);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .discussion-card p {
+            font-size: 0.82rem;
+            line-height: 1.45;
+            color: var(--text-muted);
+        }
+
+        .discussion-card .question-text {
+            font-weight: 500;
+            color: var(--text-main);
+            margin-top: 4px;
+            border-left: 2px solid var(--color-yellow);
+            padding-left: 10px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+            display: none;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.06); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.12); }
+    </style>
+</head>
+<body>
+    <div class="glow-orb glow-left"></div>
+    <div class="glow-orb glow-right"></div>
+
+    <!-- Header -->
+    <header>
+        <div class="header-left">
+            <h1>Session 03: Persistent Memory Playground</h1>
+            <p>Compare statelessness, conversation arrays, file persistence, and native tool-calling</p>
+        </div>
+
+        <!-- Navigation Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-maintab="theory">How it Works</button>
+            <button class="tab-btn" data-maintab="playground">Playground</button>
+        </div>
+
+        <div class="header-right">
+            <label for="model-select">Active Model</label>
+            <select id="model-select">
+                <option value="">Loading free models...</option>
+            </select>
+        </div>
+    </header>
+
+    <!-- Theory/How it Works Tab -->
+    <div id="maintab-theory" class="theory-view-container maintab-content active">
+        <div class="theory-selector-bar">
+            <button class="theory-mode-btn active" data-theorymode="stateless">Stateless (Goldfish)</button>
+            <button class="theory-mode-btn" data-theorymode="session">Session Memory</button>
+            <button class="theory-mode-btn" data-theorymode="persist-all">Persistent Log (Log All)</button>
+            <button class="theory-mode-btn" data-theorymode="persist-tool">Tool-Calling Memory</button>
+        </div>
+        
+        <div class="theory-split">
+            <!-- Diagram Panel -->
+            <div class="diagram-panel">
+                <div class="diagram-canvas">
+                    <!-- User Query Node -->
+                    <div class="diag-node node-user" id="node-user" style="left: 5%; top: 40%;">
+                        <span class="node-icon">👤</span>
+                        <span class="node-label">User Query</span>
+                    </div>
+                    
+                    <!-- Context Assembler Node -->
+                    <div class="diag-node node-assembler" id="node-assembler" style="left: 30%; top: 40%;">
+                        <span class="node-icon">🧩</span>
+                        <span class="node-label">Context Assembler</span>
+                    </div>
+
+                    <!-- LLM Brain Node -->
+                    <div class="diag-node node-brain-diag pulse" id="node-brain" style="left: 58%; top: 40%;">
+                        <span class="node-icon">🧠</span>
+                        <span class="node-label">LLM Brain</span>
+                    </div>
+
+                    <!-- Response Node -->
+                    <div class="diag-node node-response" id="node-response" style="left: 85%; top: 40%;">
+                        <span class="node-icon">💬</span>
+                        <span class="node-label">AI Response</span>
+                    </div>
+
+                    <!-- Short-Term Memory Node -->
+                    <div class="diag-node node-short-mem" id="node-short-mem" style="left: 30%; top: 8%;">
+                        <span class="node-icon">⚡</span>
+                        <span class="node-label">Short-Term Memory<br><small>(JS Messages Array)</small></span>
+                    </div>
+
+                    <!-- Long-Term Memory Node -->
+                    <div class="diag-node node-long-mem" id="node-long-mem" style="left: 44%; top: 75%;">
+                        <span class="node-icon">💾</span>
+                        <span class="node-label">Long-Term Memory<br><small>(memories.md File)</small></span>
+                    </div>
+
+                    <!-- SVG Flow Connectors -->
+                    <svg class="diagram-svg" id="diagram-connections">
+                        <path id="path-user-assembler" class="flow-path path-usr" d=""></path>
+                        <path id="path-assembler-brain" class="flow-path path-sys" d=""></path>
+                        <path id="path-brain-response" class="flow-path path-out" d=""></path>
+                        <path id="path-shortmem-assembler" class="flow-path path-sys" d=""></path>
+                        <path id="path-longmem-assembler" class="flow-path path-out" d=""></path>
+                        <path id="path-response-shortmem" class="flow-path path-sys" d=""></path>
+                        <path id="path-response-longmem" class="flow-path path-out" d=""></path>
+                        <path id="path-brain-longmem" class="flow-path path-brain" d=""></path>
+                        <path id="path-user-brain" class="flow-path path-usr" d=""></path>
+                    </svg>
+                </div>
+            </div>
+            
+            <!-- Explanation Panel -->
+            <div class="explanation-panel">
+                <div class="expl-card" id="expl-text">
+                    <!-- Loaded dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Playground Tab -->
+    <div id="maintab-playground" class="workspace maintab-content">
+        
+        <!-- Left: Chatbot Interface -->
+        <div class="chat-section">
+            <div class="chat-header">
+                <div class="chat-title-group">
+                    <span class="chat-title" id="chat-title-display">Stateless Mode (Goldfish)</span>
+                    <span class="mode-badge" id="mode-badge-display">Forgets Everything</span>
+                </div>
+                <div class="chat-controls">
+                    <button class="btn-new-session" id="btn-new-session" title="Simulate starting a brand-new user session by wiping short-term memory">New Session</button>
+                    <button class="btn-reset-disk" id="btn-reset-disk" title="Reset memories.md file on disk">Reset Disk File</button>
+                </div>
+            </div>
+
+            <!-- Mode Selector Bar -->
+            <div class="mode-selection-bar">
+                <div class="mode-card active" data-mode="stateless">
+                    <h4>Option 1: Stateless</h4>
+                    <p>No history is sent</p>
+                </div>
+                <div class="mode-card" data-mode="session">
+                    <h4>Option 2: Session</h4>
+                    <p>Remembers active thread</p>
+                </div>
+                <div class="mode-card" data-mode="persist-all">
+                    <h4>Option 3: Log All</h4>
+                    <p>Appends all logs to disk</p>
+                </div>
+                <div class="mode-card" data-mode="persist-tool">
+                    <h4>Option 4: Tool-Call</h4>
+                    <p>AI writes/reads disk</p>
+                </div>
+            </div>
+
+            <!-- Messages Window -->
+            <div class="messages-container" id="messages-container">
+                <div class="msg-bubble msg-bot">Hello! I am your assistant. Let's chat. I'll behave differently depending on the active Memory Option above! (Try telling me your name, then clicking "New Session").</div>
+            </div>
+
+            <!-- Input Bar -->
+            <div class="input-bar">
+                <textarea id="user-input" placeholder="Type your message here... (e.g. 'My name is Alice')"></textarea>
+                <button class="btn-send" id="btn-send">
+                    <span class="spinner" id="spinner"></span>
+                    <span id="send-text">Send</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Right: Techie Inspector -->
+        <div class="inspector-section">
+            <div class="inspector-header">
+                <h2>Techie Inspector (Under The Hood)</h2>
+            </div>
+
+            <!-- Inspector Tab Buttons -->
+            <div class="inspector-tab-bar">
+                <button class="ins-tab-btn active" data-instab="payload">Payload JSON</button>
+                <button class="ins-tab-btn" data-instab="file">memories.md</button>
+                <button class="ins-tab-btn" data-instab="tools">Tool Logs</button>
+                <button class="ins-tab-btn" data-instab="socratic">Socratic Q's</button>
+            </div>
+
+            <!-- Tab 1: Context Payload -->
+            <div class="ins-tab-content active" id="tab-payload">
+                <pre id="payload-display">// The messages array representing the context window sent to the LLM will display here...</pre>
+            </div>
+
+            <!-- Tab 2: Disk Viewer -->
+            <div class="ins-tab-content" id="tab-file">
+                <div class="memories-md-view" id="file-display">// Reading memories.md on disk...</div>
+            </div>
+
+            <!-- Tab 3: Tool Execution Log -->
+            <div class="ins-tab-content" id="tab-tools">
+                <div class="tool-log-container" id="tools-display">
+                    <p style="font-size: 0.8rem; color: var(--text-muted);">No tools have been called in this session yet. Turn on Option 4 (Tool-Calling) and ask the AI to remember or search facts to trigger tool calls.</p>
+                </div>
+            </div>
+
+            <!-- Tab 4: Socratic Questions -->
+            <div class="ins-tab-content" id="tab-socratic">
+                <div class="discussion-container">
+                    <div class="discussion-card">
+                        <h4>Exercise 2 Discussion</h4>
+                        <p><strong>Topic: Log-All Persistence (Naïve Memory)</strong></p>
+                        <p class="question-text">If we record every chat turn to a file and read it all back as background context, what happens to our token usage and bill as the chat grows? What if the user says "I hate apples" and then later "I love apples"—how does the LLM resolve conflicting history?</p>
+                    </div>
+
+                    <div class="discussion-card">
+                        <h4>Exercise 3 Discussion</h4>
+                        <p><strong>Topic: Tool-Calling Memory (Selective Memory)</strong></p>
+                        <p class="question-text">If the AI uses tools to search for "ice cream" in the file, but the text was written as "likes gelato", will text-search find it? How does semantic search (vector embeddings) solve this? How do we prevent the AI from calling tools on trivial statements like "I am tired"?</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const modelSelect = document.getElementById('model-select');
+        const modeCards = document.querySelectorAll('.mode-card');
+        const chatTitleDisplay = document.getElementById('chat-title-display');
+        const modeBadgeDisplay = document.getElementById('mode-badge-display');
+        const btnNewSession = document.getElementById('btn-new-session');
+        const btnResetDisk = document.getElementById('btn-reset-disk');
+        const messagesContainer = document.getElementById('messages-container');
+        const userInput = document.getElementById('user-input');
+        const btnSend = document.getElementById('btn-send');
+        const spinner = document.getElementById('spinner');
+        const sendText = document.getElementById('send-text');
+
+        const payloadDisplay = document.getElementById('payload-display');
+        const fileDisplay = document.getElementById('file-display');
+        const toolsDisplay = document.getElementById('tools-display');
+
+        // State variables
+        let currentMode = 'stateless';
+        let chatHistory = [];      // Standard message log [{role, content}] for UI rendering
+        let messagesPayload = [];  // Array sent to OpenRouter API
+        let toolHistory = [];      // Preserved history for Option 4 tool cycles
+
+        const modeConfigs = {
+            'stateless': { title: 'Stateless Mode (Goldfish)', badge: 'Forgets Everything' },
+            'session': { title: 'Session Memory Mode', badge: 'Remembers active thread' },
+            'persist-all': { title: 'Persistent Log Mode (Log All)', badge: 'Appends all turns to disk' },
+            'persist-tool': { title: 'Tool-Calling Memory Mode', badge: 'AI selectively writes/reads disk' }
+        };
+
+        // Active Models selection list (filtered for free models that support tool calling)
+        const PREFERRED_FREE_MODELS = [
+            { id: 'openrouter/free', name: 'Auto Free Model (OpenRouter)' },
+            { id: 'meta-llama/llama-3.3-70b-instruct:free', name: 'Llama 3.3 70B Instruct (Free)' },
+            { id: 'meta-llama/llama-3.2-3b-instruct:free', name: 'Llama 3.2 3B Instruct (Free)' }
+        ];
+
+        // Tab Toggle Logic
+        document.querySelectorAll('.ins-tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.ins-tab-btn').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.ins-tab-content').forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(`tab-${btn.getAttribute('data-instab')}`).classList.add('active');
+            });
+        });
+
+        // Mode Card Selection Logic
+        modeCards.forEach(card => {
+            card.addEventListener('click', () => {
+                modeCards.forEach(c => c.classList.remove('active'));
+                card.classList.add('active');
+                
+                currentMode = card.getAttribute('data-mode');
+                chatTitleDisplay.textContent = modeConfigs[currentMode].title;
+                modeBadgeDisplay.textContent = modeConfigs[currentMode].badge;
+
+                appendSystemMessage(`Memory Mode switched to: ${modeConfigs[currentMode].title}`);
+                updatePayloadInspector();
+            });
+        });
+
+        // Initialize default UI inspector values
+        function updatePayloadInspector() {
+            if (currentMode === 'stateless') {
+                payloadDisplay.textContent = JSON.stringify([
+                    { role: "user", content: userInput.value.trim() || "[User's latest message]" }
+                ], null, 2);
+            } else if (currentMode === 'session') {
+                const futurePayload = [...messagesPayload];
+                if (userInput.value.trim()) {
+                    futurePayload.push({ role: "user", content: userInput.value.trim() });
+                }
+                payloadDisplay.textContent = JSON.stringify(futurePayload, null, 2);
+            } else if (currentMode === 'persist-all') {
+                const futurePayload = [
+                    { role: "system", content: "You are a customer support assistant. You have access to historical memories..." },
+                    ...messagesPayload
+                ];
+                if (userInput.value.trim()) {
+                    futurePayload.push({ role: "user", content: userInput.value.trim() });
+                }
+                payloadDisplay.textContent = JSON.stringify(futurePayload, null, 2);
+            } else if (currentMode === 'persist-tool') {
+                const futurePayload = [
+                    { role: "system", content: "You are an assistant with long-term memory. You must selectively save key user facts..." },
+                    ...toolHistory
+                ];
+                if (userInput.value.trim()) {
+                    futurePayload.push({ role: "user", content: userInput.value.trim() });
+                }
+                payloadDisplay.textContent = JSON.stringify(futurePayload, null, 2);
+            }
+        }
+
+        userInput.addEventListener('input', updatePayloadInspector);
+
+        // Fetch memories.md disk contents
+        async function refreshFileInspector() {
+            try {
+                const res = await fetch('/api/memory');
+                const data = await res.json();
+                fileDisplay.textContent = data.content || '# Saved Memories\n\n';
+            } catch (err) {
+                fileDisplay.textContent = `Error reading file: ${err.message}`;
+            }
+        }
+
+        // New Session Button (simulates starting a new session by wiping local arrays)
+        btnNewSession.addEventListener('click', () => {
+            chatHistory = [];
+            messagesPayload = [];
+            toolHistory = [];
+            
+            // Clear message window
+            messagesContainer.innerHTML = '';
+            appendSystemMessage('🧹 New Session Started. Short-term (session) memory has been wiped clean.');
+            updatePayloadInspector();
+        });
+
+        // Reset Disk Button
+        btnResetDisk.addEventListener('click', async () => {
+            if (confirm('Are you sure you want to completely erase the memories.md file on disk?')) {
+                try {
+                    const res = await fetch('/api/reset', { method: 'POST' });
+                    if (res.ok) {
+                        appendSystemMessage('💾 Disk file memories.md has been reset.');
+                        refreshFileInspector();
+                    } else {
+                        throw new Error('Failed to reset');
+                    }
+                } catch (err) {
+                    appendSystemMessage(`❌ Failed to reset disk file: ${err.message}`);
+                }
+            }
+        });
+
+        // Append message to UI
+        function appendMessage(role, text) {
+            const bubble = document.createElement('div');
+            bubble.className = `msg-bubble ${role === 'user' ? 'msg-user' : 'msg-bot'}`;
+            bubble.textContent = text;
+            messagesContainer.appendChild(bubble);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function appendSystemMessage(text) {
+            const bubble = document.createElement('div');
+            bubble.className = 'msg-bubble msg-system';
+            bubble.textContent = text;
+            messagesContainer.appendChild(bubble);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Send message logic
+        async function sendMessage() {
+            const text = userInput.value.trim();
+            if (!text) return;
+
+            appendMessage('user', text);
+            userInput.value = '';
+            
+            // Set UI Loading state
+            btnSend.disabled = true;
+            spinner.style.display = 'block';
+            sendText.style.display = 'none';
+
+            try {
+                const model = modelSelect.value;
+                const requestPayload = {
+                    model: model,
+                    mode: currentMode,
+                    userMessage: text,
+                    // Pass active message arrays
+                    messages: currentMode === 'persist-tool' ? toolHistory : messagesPayload
+                };
+
+                const res = await fetch('/api/chat', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(requestPayload)
+                });
+
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.error || 'Server error');
+
+                // Render response
+                appendMessage('assistant', data.response);
+
+                // Update internal states
+                if (currentMode === 'session' || currentMode === 'persist-all') {
+                    // Update active conversation array
+                    messagesPayload = data.messagesPayload;
+                } else if (currentMode === 'persist-tool') {
+                    // Preserved tool calling sequence
+                    toolHistory = data.messagesPayload;
+                }
+
+                // Render tool execution logs if any
+                if (data.executedTools && data.executedTools.length > 0) {
+                    renderToolLogs(data.executedTools);
+                    // switch tab to Tool Logs
+                    document.querySelectorAll('.ins-tab-btn').forEach(b => b.classList.remove('active'));
+                    document.querySelectorAll('.ins-tab-content').forEach(c => c.classList.remove('active'));
+                    document.querySelector('[data-instab="tools"]').classList.add('active');
+                    document.getElementById('tab-tools').classList.add('active');
+                }
+
+                // Update Inspectors
+                updatePayloadInspector();
+                refreshFileInspector();
+
+            } catch (err) {
+                appendSystemMessage(`Error: ${err.message}`);
+            } finally {
+                btnSend.disabled = false;
+                spinner.style.display = 'none';
+                sendText.style.display = 'block';
+            }
+        }
+
+        btnSend.addEventListener('click', sendMessage);
+        userInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Render tool calls
+        function renderToolLogs(toolCalls) {
+            toolsDisplay.innerHTML = '';
+            toolCalls.forEach(call => {
+                const card = document.createElement('div');
+                card.className = 'tool-card';
+                card.innerHTML = `
+                    <h5>
+                        <span>⚙️ Tool Call</span>
+                        <span>${call.name}</span>
+                    </h5>
+                    <div class="tool-card-body">
+                        <strong>Arguments:</strong> ${JSON.stringify(call.arguments)}<br>
+                        <strong>Result:</strong> ${call.result}
+                    </div>
+                `;
+                toolsDisplay.appendChild(card);
+            });
+        }
+
+        // Fetch free models from OpenRouter on launch
+        async function loadModels() {
+            try {
+                const res = await fetch('/api/models');
+                if (!res.ok) throw new Error('API request failed');
+                const data = await res.json();
+                
+                const freeModels = data.models;
+
+                if (!freeModels || freeModels.length === 0) {
+                    throw new Error('No free models returned');
+                }
+
+                // Map models to add tool support info
+                const processedModels = freeModels.map(model => {
+                    const supportsTools = model.supported_parameters && model.supported_parameters.includes('tools');
+                    return {
+                        id: model.id,
+                        name: model.name || model.id,
+                        supportsTools: supportsTools
+                    };
+                });
+
+                // Sort: Tool-capable models first, then other free models
+                processedModels.sort((a, b) => {
+                    if (a.supportsTools && !b.supportsTools) return -1;
+                    if (!a.supportsTools && b.supportsTools) return 1;
+                    return a.name.localeCompare(b.name);
+                });
+
+                // Make sure openrouter/free is at the very top
+                const autoFreeIdx = processedModels.findIndex(m => m.id === 'openrouter/free');
+                if (autoFreeIdx > -1) {
+                    const [autoFree] = processedModels.splice(autoFreeIdx, 1);
+                    processedModels.unshift(autoFree);
+                }
+
+                modelSelect.innerHTML = processedModels.map(model => {
+                    const tag = model.supportsTools ? ' [🛠️ Tool-Capable]' : ' [Text-Only]';
+                    const isSelected = model.id === 'openrouter/free' ? 'selected' : '';
+                    return `<option value="${model.id}" ${isSelected}>${model.name}${tag}</option>`;
+                }).join('');
+            } catch (e) {
+                console.error('Failed to load models via API proxy:', e);
+                // Fallback to static preferred list
+                modelSelect.innerHTML = PREFERRED_FREE_MODELS.map(model => 
+                    `<option value="${model.id}">${model.name} (Fallback)</option>`
+                ).join('');
+            }
+        }
+
+        // --- Main Tabs Navigation ---
+        const mainTabButtons = document.querySelectorAll('[data-maintab]');
+        const mainTabContents = document.querySelectorAll('.maintab-content');
+
+        mainTabButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const target = btn.getAttribute('data-maintab');
+                
+                mainTabButtons.forEach(b => b.classList.remove('active'));
+                mainTabContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(`maintab-${target}`).classList.add('active');
+                
+                if (target === 'theory') {
+                    // Force redraw and refresh diagram
+                    setTimeout(() => {
+                        drawTheoryPaths();
+                    }, 50);
+                }
+            });
+        });
+
+        // --- Theory Diagram & Flows JS ---
+        const theoryModeButtons = document.querySelectorAll('[data-theorymode]');
+        let activeTheoryMode = 'stateless';
+
+        const THEORY_METADATA = {
+            stateless: {
+                title: "Stateless (Goldfish Pattern)",
+                concept: "Every request is processed completely from scratch. The AI doesn't know who you are, what time it is, or what you said in the previous turn.",
+                tech: "Calls the LLM with a single message: <code>messages: [{role: 'user', content: query}]</code>. Keeps the context payload at a constant O(1) size. Useful for zero-context tasks but completely breaks multi-turn chats.",
+                pros: ["Zero database reads/writes", "Fastest API response times", "No risk of token expansion or high bills"],
+                cons: ["Cannot hold conversations", "Cannot remember names or preferences"]
+            },
+            session: {
+                title: "Session Memory (Context Array)",
+                concept: "The developer maintains an active array of all messages exchanged during this conversation thread, sending the entire list back and forth on every single turn.",
+                tech: "Grows linearly with <code>O(N)</code> complexity on every exchange. Must be truncated (e.g. drop oldest messages) if the conversation exceeds the model's Context Window limit.",
+                pros: ["Allows natural back-and-forth chat", "Easy client-side Javascript implementation"],
+                cons: ["High token costs as thread grows", "All memory is wiped when reloading the browser tab"]
+            },
+            "persist-all": {
+                title: "Persistent Log (Log All)",
+                concept: "Every word said by the user or the assistant is written to a file on disk (<code>memories.md</code>). At startup, the app reads the entire file and injects it into the system prompt.",
+                tech: "Performs Disk I/O on every turn. Merges the raw text log inside the <code>system</code> prompt. Relies on the LLM to search through the logs to resolve details.",
+                pros: ["Memories survive page reloads", "Simple log file implementation"],
+                cons: ["Incredibly wasteful (bloated context window)", "Causes prompt confusion if conflicting facts exist in logs"]
+            },
+            "persist-tool": {
+                title: "Tool-Calling Memory (Selective Memory)",
+                concept: "The model is equipped with file-reading and writing tools. Instead of reading the whole file, the AI intelligently invokes a tool to search or save facts only when necessary.",
+                tech: "Executes an <b>Interception Loop</b>: Server intercepts LLM's requested tool call, performs local Node filesystem operations, writes the results back to the messages list, and re-queries the model.",
+                pros: ["Highly optimal token usage", "Maintains clean context window", "Survives restarts and stays organized"],
+                cons: ["Requires multiple model roundtrips (higher latency)", "Requires advanced models that support function calling"]
+            }
+        };
+
+        function updateTheoryMode(mode) {
+            activeTheoryMode = mode;
+            
+            // Toggle sub-tabs active state
+            theoryModeButtons.forEach(btn => {
+                if (btn.getAttribute('data-theorymode') === mode) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+
+            // Update explanation card
+            const data = THEORY_METADATA[mode];
+            const explText = document.getElementById('expl-text');
+            if (explText && data) {
+                explText.innerHTML = `
+                    <h3>${data.title} <span>Memory Mode Option</span></h3>
+                    <p><strong>Core Concept:</strong> ${data.concept}</p>
+                    <p><strong>Under the Hood (For Techies):</strong> ${data.tech}</p>
+                    <div class="pros-cons-grid">
+                        <div class="pros-box">
+                            <h5>Pros</h5>
+                            <ul>
+                                ${data.pros.map(p => `<li>✅ ${p}</li>`).join('')}
+                            </ul>
+                        </div>
+                        <div class="cons-box">
+                            <h5>Cons</h5>
+                            <ul>
+                                ${data.cons.map(c => `<li>❌ ${c}</li>`).join('')}
+                            </ul>
+                        </div>
+                    </div>
+                `;
+            }
+
+            // Update node display states
+            const userNode = document.getElementById('node-user');
+            const assemblerNode = document.getElementById('node-assembler');
+            const brainNode = document.getElementById('node-brain');
+            const responseNode = document.getElementById('node-response');
+            const shortMemNode = document.getElementById('node-short-mem');
+            const longMemNode = document.getElementById('node-long-mem');
+
+            // Reset all nodes
+            [userNode, assemblerNode, brainNode, responseNode, shortMemNode, longMemNode].forEach(node => {
+                if (node) node.classList.remove('disabled');
+            });
+
+            // Toggle active paths
+            const paths = {
+                'path-user-assembler': false,
+                'path-assembler-brain': false,
+                'path-brain-response': false,
+                'path-shortmem-assembler': false,
+                'path-longmem-assembler': false,
+                'path-response-shortmem': false,
+                'path-response-longmem': false,
+                'path-brain-longmem': false,
+                'path-user-brain': false
+            };
+
+            if (mode === 'stateless') {
+                if (assemblerNode) assemblerNode.classList.add('disabled');
+                if (shortMemNode) shortMemNode.classList.add('disabled');
+                if (longMemNode) longMemNode.classList.add('disabled');
+                paths['path-user-brain'] = true;
+                paths['path-brain-response'] = true;
+            } else if (mode === 'session') {
+                if (longMemNode) longMemNode.classList.add('disabled');
+                paths['path-user-assembler'] = true;
+                paths['path-shortmem-assembler'] = true;
+                paths['path-assembler-brain'] = true;
+                paths['path-brain-response'] = true;
+                paths['path-response-shortmem'] = true;
+            } else if (mode === 'persist-all') {
+                paths['path-user-assembler'] = true;
+                paths['path-shortmem-assembler'] = true;
+                paths['path-longmem-assembler'] = true;
+                paths['path-assembler-brain'] = true;
+                paths['path-brain-response'] = true;
+                paths['path-response-shortmem'] = true;
+                paths['path-response-longmem'] = true;
+            } else if (mode === 'persist-tool') {
+                paths['path-user-assembler'] = true;
+                paths['path-shortmem-assembler'] = true;
+                paths['path-assembler-brain'] = true;
+                paths['path-brain-response'] = true;
+                paths['path-brain-longmem'] = true;
+            }
+
+            // Apply path classes
+            Object.keys(paths).forEach(pathId => {
+                const pathEl = document.getElementById(pathId);
+                if (pathEl) {
+                    if (paths[pathId]) {
+                        pathEl.classList.add('active');
+                    } else {
+                        pathEl.classList.remove('active');
+                    }
+                }
+            });
+        }
+
+        theoryModeButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                updateTheoryMode(btn.getAttribute('data-theorymode'));
+            });
+        });
+
+        // Draw connections
+        function drawTheoryPaths() {
+            const svg = document.getElementById('diagram-connections');
+            if (!svg || svg.clientWidth === 0) return;
+
+            const getCenter = (id) => {
+                const el = document.getElementById(id);
+                if (!el) return { x: 0, y: 0 };
+                const rect = el.getBoundingClientRect();
+                const svgRect = svg.getBoundingClientRect();
+                return {
+                    x: rect.left + rect.width / 2 - svgRect.left,
+                    y: rect.top + rect.height / 2 - svgRect.top
+                };
+            };
+
+            const user = getCenter('node-user');
+            const ass = getCenter('node-assembler');
+            const brain = getCenter('node-brain');
+            const resp = getCenter('node-response');
+            const sm = getCenter('node-short-mem');
+            const lm = getCenter('node-long-mem');
+
+            const setPath = (pathId, p1, p2, curveType = 'straight') => {
+                const pathEl = document.getElementById(pathId);
+                if (!pathEl) return;
+                if (curveType === 'straight') {
+                    pathEl.setAttribute('d', `M ${p1.x} ${p1.y} L ${p2.x} ${p2.y}`);
+                } else if (curveType === 'curve-up') {
+                    const cx = (p1.x + p2.x) / 2;
+                    const cy = Math.min(p1.y, p2.y) - 30;
+                    pathEl.setAttribute('d', `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`);
+                } else if (curveType === 'curve-down') {
+                    const cx = (p1.x + p2.x) / 2;
+                    const cy = Math.max(p1.y, p2.y) + 30;
+                    pathEl.setAttribute('d', `M ${p1.x} ${p1.y} Q ${cx} ${cy} ${p2.x} ${p2.y}`);
+                }
+            };
+
+            setPath('path-user-assembler', user, ass);
+            setPath('path-assembler-brain', ass, brain);
+            setPath('path-brain-response', brain, resp);
+            setPath('path-shortmem-assembler', sm, ass);
+            setPath('path-longmem-assembler', lm, ass);
+            setPath('path-response-shortmem', resp, sm, 'curve-up');
+            setPath('path-response-longmem', resp, lm, 'curve-down');
+            setPath('path-brain-longmem', brain, lm);
+            setPath('path-user-brain', user, brain);
+        }
+
+        window.addEventListener('resize', drawTheoryPaths);
+
+        // Init
+        async function init() {
+            await loadModels();
+            updatePayloadInspector();
+            refreshFileInspector();
+            updateTheoryMode('stateless');
+            
+            // Draw connections after short delay to allow DOM laying out
+            setTimeout(() => {
+                drawTheoryPaths();
+            }, 100);
+        }
+
+        init();
+    </script>
+</body>
+</html>
