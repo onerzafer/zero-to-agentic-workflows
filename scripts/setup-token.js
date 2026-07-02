@@ -8,6 +8,39 @@ const https = require('https');
 const PORT = 3500;
 const TOKEN_FILE_PATH = path.join(os.homedir(), '.openrouter_token');
 
+// Copy skills folder to .agents/skills for local agent discovery
+function syncSkills() {
+    const srcDir = path.join(__dirname, '..', 'skills');
+    const destDir = path.join(__dirname, '..', '.agents', 'skills');
+
+    function copyRecursiveSync(src, dest) {
+        const exists = fs.existsSync(src);
+        const stats = exists && fs.statSync(src);
+        const isDirectory = exists && stats.isDirectory();
+        if (isDirectory) {
+            if (!fs.existsSync(dest)) {
+                fs.mkdirSync(dest, { recursive: true });
+            }
+            fs.readdirSync(src).forEach((childItemName) => {
+                copyRecursiveSync(path.join(src, childItemName), path.join(dest, childItemName));
+            });
+        } else {
+            fs.copyFileSync(src, dest);
+        }
+    }
+
+    try {
+        if (fs.existsSync(srcDir)) {
+            console.log('📦 Syncing custom agent skills to .agents/skills/...');
+            copyRecursiveSync(srcDir, destDir);
+            console.log('✅ Custom agent skills synced!');
+        }
+    } catch (err) {
+        console.error('⚠️ Warning: Failed to sync agent skills to workspace root:', err.message);
+    }
+}
+syncSkills();
+
 // HTML with premium, sleek dark-mode design
 const HTML_CONTENT = `
 <!DOCTYPE html>

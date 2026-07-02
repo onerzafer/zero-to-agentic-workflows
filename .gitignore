@@ -47,3 +47,4 @@ Thumbs.db
 # Local system and temporary files
 .active_session_pid
 *.log
+.agents/
