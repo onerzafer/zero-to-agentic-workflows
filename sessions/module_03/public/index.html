@@ -7,6 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
     <style>
         :root {
             --bg-color: #060913;
@@ -390,6 +391,128 @@
             gap: 4px;
             font-size: 0.78rem;
             color: var(--text-muted);
+        }
+
+        /* CLI Code Explained Tab Styling */
+        .code-view-container {
+            display: flex;
+            width: 100%;
+            height: 100%;
+            padding: 24px 40px;
+            gap: 28px;
+            overflow: hidden;
+            align-items: stretch;
+            box-sizing: border-box;
+        }
+
+        .code-sidebar {
+            flex: 0.8;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            height: 100%;
+            box-sizing: border-box;
+        }
+
+        .code-menu-btn {
+            background: transparent;
+            border: 1px solid transparent;
+            color: var(--text-muted);
+            padding: 12px 16px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            text-align: left;
+            transition: all 0.2s ease;
+        }
+
+        .code-menu-btn:hover {
+            color: var(--text-main);
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .code-menu-btn.active {
+            background: rgba(99, 102, 241, 0.1);
+            color: var(--primary);
+            border-color: rgba(99, 102, 241, 0.2);
+            box-shadow: 0 4px 15px rgba(99, 102, 241, 0.05);
+        }
+
+        .code-details-panel {
+            flex: 3;
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 20px;
+            backdrop-filter: blur(15px);
+            padding: 28px;
+            overflow-y: auto;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-sizing: border-box;
+        }
+
+        .code-sect-content {
+            display: none;
+            flex-direction: column;
+            gap: 20px;
+            animation: fadeIn 0.3s ease forwards;
+        }
+
+        .code-sect-content.active {
+            display: flex;
+        }
+
+        .code-sect-content h3 {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 12px;
+        }
+
+        .code-sect-content h4 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--primary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 10px;
+        }
+
+        .code-snippet-box {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
+            padding: 16px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 0.85rem;
+            color: #a78bfa;
+            overflow-x: auto;
+            white-space: pre;
+            line-height: 1.4;
+        }
+
+        .mermaid-container {
+            background: rgba(10, 15, 30, 0.6);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: auto;
+            margin: 10px 0;
         }
 
         /* Split Screen Container */
@@ -861,6 +984,7 @@
         <!-- Navigation Tabs -->
         <div class="tab-bar">
             <button class="tab-btn active" data-maintab="theory">How it Works</button>
+            <button class="tab-btn" data-maintab="code">CLI Code Explained</button>
             <button class="tab-btn" data-maintab="playground">Playground</button>
         </div>
 
@@ -940,6 +1064,172 @@
             <div class="explanation-panel">
                 <div class="expl-card" id="expl-text">
                     <!-- Loaded dynamically via JavaScript -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CLI Implementation Tab -->
+    <div id="maintab-code" class="code-view-container maintab-content">
+        <div class="code-sidebar">
+            <button class="code-menu-btn active" data-codesect="ex1">Exercise 1: Session Memory</button>
+            <button class="code-menu-btn" data-codesect="ex2">Exercise 2: File Logging</button>
+            <button class="code-menu-btn" data-codesect="ex3">Exercise 3: Interception Loop</button>
+        </div>
+        <div class="code-details-panel">
+            <!-- Exercise 1 -->
+            <div class="code-sect-content active" id="code-sect-ex1">
+                <h3>🧩 Exercise 1: Session Memory (In-Memory Arrays)</h3>
+                <p><strong>Goal:</strong> Maintain conversation context within the active thread by appending messages to a local Javascript array buffer.</p>
+                
+                <h4>Implementation Details</h4>
+                <p>The developer implements a function <code>handleSessionMemory(messages, userMessage, assistantMessage)</code>. If the assistant's reply is not yet known, we push the user query to build the prompt payload. Once the model responds, we append the response to close the loop.</p>
+
+                <div class="code-snippet-box">function handleSessionMemory(messages, userMessage, assistantMessage = null) {
+    if (assistantMessage === null) {
+        messages.push({ role: 'user', content: userMessage });
+        return messages;
+    } else {
+        messages.push({ role: 'assistant', content: assistantMessage });
+        return messages;
+    }
+}</div>
+
+                <h4>UML Data Flow Sequence</h4>
+                <div class="mermaid-container">
+                    <pre class="mermaid" id="mermaid-ex1">
+sequenceDiagram
+    autonumber
+    actor User
+    participant CLI as cli-chat-solved.js
+    participant API as OpenRouter API
+
+    User->>CLI: Sends message "Hello, I am Bob"
+    CLI->>CLI: Calls handleSessionMemory(chatHistory, "Hello...")
+    Note over CLI: Pushes user message to chatHistory array
+    CLI->>API: POST /chat/completions { messages: chatHistory }
+    API-->>CLI: Returns response "Hello Bob! How can I help?"
+    CLI->>CLI: Calls handleSessionMemory(chatHistory, null, "Hello Bob...")
+    Note over CLI: Pushes assistant response to chatHistory array
+    CLI-->>User: Displays response to terminal
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Exercise 2 -->
+            <div class="code-sect-content" id="code-sect-ex2">
+                <h3>💾 Exercise 2: Persistent Log (Naïve File I/O)</h3>
+                <p><strong>Goal:</strong> Erase session boundary limits by saving the conversation transcript to disk (<code>memories.md</code>) and feeding it back into the system prompt on new launches.</p>
+                
+                <h4>Implementation Details</h4>
+                <p>Before querying the API, the app reads <code>memories.md</code> and injects its contents as a history reference in the <code>system</code> instructions. When the reply is returned, the new user-assistant dialogue pair is appended to the file on disk.</p>
+
+                <div class="code-snippet-box">function handlePersistentLog(userMessage, assistantMessage = null) {
+    if (assistantMessage === null) {
+        let memories = "";
+        if (fs.existsSync(MEMORY_FILE_PATH)) {
+            memories = fs.readFileSync(MEMORY_FILE_PATH, 'utf8');
+        }
+        return `You are a helpful assistant. You have access to past log memories:\n${memories}`;
+    } else {
+        const logEntry = `\n--- Chat Log ---\nUser: ${userMessage}\nAssistant: ${assistantMessage}\n`;
+        fs.appendFileSync(MEMORY_FILE_PATH, logEntry, 'utf8');
+    }
+}</div>
+
+                <h4>UML Data Flow Sequence</h4>
+                <div class="mermaid-container">
+                    <pre class="mermaid" id="mermaid-ex2">
+sequenceDiagram
+    autonumber
+    actor User
+    participant CLI as cli-chat-solved.js
+    participant FS as memories.md (Disk File)
+    participant API as OpenRouter API
+
+    User->>CLI: Sends query "Where do I live?"
+    CLI->>FS: Reads memories.md file
+    FS-->>CLI: Returns full raw text transcripts
+    CLI->>CLI: Injects logs into system prompt instructions
+    CLI->>API: POST /chat/completions { messages: [systemMsg, ...chatHistory] }
+    API-->>CLI: Returns response "According to logs, you live in Rome"
+    CLI->>FS: Appends user + assistant exchange to memories.md
+    CLI-->>User: Displays response to terminal
+                    </pre>
+                </div>
+            </div>
+
+            <!-- Exercise 3 -->
+            <div class="code-sect-content" id="code-sect-ex3">
+                <h3>⚙️ Exercise 3: Tool-Calling Memory (Agentic Interception Loop)</h3>
+                <p><strong>Goal:</strong> Optimize token costs and context precision. Instead of dumping raw logs, the LLM uses local tools (<code>save_memory</code> and <code>search_memory</code>) to write and search memories on demand.</p>
+                
+                <h4>Implementation Details</h4>
+                <p>This creates a recursive **Interception Loop**. When the model returns a <code>tool_calls</code> array, the client executes the tool locally (reading/writing to <code>memories.md</code>), appends the result to history with role <code>tool</code>, and re-queries the model. The loop repeats until the LLM returns a text response.</p>
+
+                <div class="code-snippet-box">async function handleToolCallingMemory(userMessage) {
+    toolHistory.push({ role: 'user', content: userMessage });
+    
+    const payload = {
+        model: selectedModel,
+        messages: [ { role: 'system', content: instructions }, ...toolHistory ],
+        tools: MEMORY_TOOLS
+    };
+    
+    let data = await makeOpenRouterCall(payload);
+    let message = data.choices[0].message;
+    
+    while (message.tool_calls &amp;&amp; message.tool_calls.length &gt; 0) {
+        toolHistory.push(message); // Save tool calls request
+        
+        for (const toolCall of message.tool_calls) {
+            const name = toolCall.function.name;
+            const args = JSON.parse(toolCall.function.arguments);
+            const result = executeLocalTool(name, args); // Run local fs code
+            
+            toolHistory.push({
+                role: 'tool',
+                tool_call_id: toolCall.id,
+                name: name,
+                content: result
+            });
+        }
+        
+        // Re-query LLM with tool responses
+        data = await makeOpenRouterCall({ ...payload, messages: [systemMsg, ...toolHistory] });
+        message = data.choices[0].message;
+    }
+    
+    toolHistory.push(message); // Save final text response
+    return message.content;
+}</div>
+
+                <h4>UML Interception Loop Sequence</h4>
+                <div class="mermaid-container">
+                    <pre class="mermaid" id="mermaid-ex3">
+sequenceDiagram
+    autonumber
+    actor User
+    participant CLI as cli-chat-solved.js
+    participant API as OpenRouter API
+    participant FS as memories.md (Disk)
+
+    User->>CLI: Sends query "My name is Alice and I like Python"
+    CLI->>CLI: Pushes user query to toolHistory array
+    CLI->>API: POST /chat/completions { messages: toolHistory, tools: MEMORY_TOOLS }
+    Note over API: Model recognizes fact "name is Alice, likes Python"<br>Generates save_memory tool call
+    API-->>CLI: Returns choice with tool_calls: save_memory(fact: "Alice likes Python")
+    CLI->>CLI: Intercepts tool call, pushes LLM request to toolHistory
+    CLI->>FS: Executes local save_memory (Writes bullet point to memories.md)
+    FS-->>CLI: Returns success output string
+    CLI->>CLI: Pushes tool result payload (role: 'tool') to toolHistory
+    
+    CLI->>API: POST /chat/completions (with updated toolHistory containing tool result)
+    Note over API: Model sees tool succeeded<br>Generates final conversational response
+    API-->>CLI: Returns final text message "Got it, I will remember you prefer Python."
+    CLI->>CLI: Pushes final assistant message to toolHistory
+    CLI-->>User: Displays response to terminal
+                    </pre>
                 </div>
             </div>
         </div>
@@ -1348,6 +1638,25 @@
             }
         }
 
+        // Initialize Mermaid for UML Sequence Diagrams
+        if (window.mermaid) {
+            mermaid.initialize({
+                startOnLoad: false,
+                theme: 'dark',
+                securityLevel: 'loose',
+                themeVariables: {
+                    background: '#0b0f19',
+                    primaryColor: '#6366f1',
+                    primaryTextColor: '#f3f4f6',
+                    lineColor: '#334155',
+                    actorBorder: '#6366f1',
+                    actorBkg: '#1e1b4b',
+                    signalColor: '#f3f4f6',
+                    signalLineColor: '#6366f1'
+                }
+            });
+        }
+
         // --- Main Tabs Navigation ---
         const mainTabButtons = document.querySelectorAll('[data-maintab]');
         const mainTabContents = document.querySelectorAll('.maintab-content');
@@ -1367,7 +1676,30 @@
                     setTimeout(() => {
                         drawTheoryPaths();
                     }, 50);
+                } else if (target === 'code') {
+                    // Force render mermaid diagrams
+                    setTimeout(() => {
+                        if (window.mermaid) {
+                            mermaid.run({ querySelector: '.mermaid' });
+                        }
+                    }, 50);
                 }
+            });
+        });
+
+        // --- Code Explanation Sub-Tabs ---
+        const codeMenuButtons = document.querySelectorAll('[data-codesect]');
+        const codeSectContents = document.querySelectorAll('.code-sect-content');
+
+        codeMenuButtons.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetSect = btn.getAttribute('data-codesect');
+                
+                codeMenuButtons.forEach(b => b.classList.remove('active'));
+                codeSectContents.forEach(c => c.classList.remove('active'));
+                
+                btn.classList.add('active');
+                document.getElementById(`code-sect-${targetSect}`).classList.add('active');
             });
         });
 
