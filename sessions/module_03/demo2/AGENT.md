@@ -1,0 +1,1 @@
+memory.md is your memory regory every new suprising information there and refer the stuff back from it
